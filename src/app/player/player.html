@@ -1,0 +1,13 @@
+<div class="player-container p-6 bg-base-300 rounded-box">
+    <h2 class="text-2xl font-bold mb-6">Character Profile</h2>
+
+    @if (player(); as playerCharacter) {
+    <div class="flex justify-center md:justify-start">
+        <app-character [character]="playerCharacter"></app-character>
+    </div>
+    } @else {
+    <div class="alert alert-warning">
+        <span>No player character found. Initialization required.</span>
+    </div>
+    }
+</div>

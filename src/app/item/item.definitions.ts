@@ -1,4 +1,4 @@
-export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'neck' | 'none';
+export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'legs' | 'feet' | 'neck' | 'none';
 
 export const ITEM_TEMPLATES = [
     {
@@ -26,7 +26,7 @@ export const ITEM_TEMPLATES = [
         "name": "Major Health Potion",
         "type": "Consumable",
         "equippableLocation": "none",
-        "heals": 30,
+        "heals": 35,
         "useMessages": [
             "{user} drinks {item} and recovers {value} health."
         ]
@@ -56,7 +56,7 @@ export const ITEM_TEMPLATES = [
         "name": "Major Mana Potion",
         "type": "Consumable",
         "equippableLocation": "none",
-        "restores": 30,
+        "restores": 35,
         "useMessages": [
             "{user} drinks {item} and restores {value} mana."
         ]
@@ -66,7 +66,7 @@ export const ITEM_TEMPLATES = [
         "name": "Loaf of Bread",
         "type": "Consumable",
         "equippableLocation": "none",
-        "heals": 2,
+        "heals": 4,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
         ]
@@ -86,7 +86,7 @@ export const ITEM_TEMPLATES = [
         "name": "Shiny Apple",
         "type": "Consumable",
         "equippableLocation": "none",
-        "heals": 1,
+        "heals": 3,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
         ]
@@ -106,7 +106,7 @@ export const ITEM_TEMPLATES = [
         "name": "Rusty Dagger",
         "type": "Weapon",
         "equippableLocation": "right-hand",
-        "damage": 3,
+        "damage": 4,
         "resilience": 10,
         "useMessages": [
             "{user} equips {item}."
@@ -117,7 +117,7 @@ export const ITEM_TEMPLATES = [
         "name": "Big Stick",
         "type": "Weapon",
         "equippableLocation": "right-hand",
-        "damage": 3,
+        "damage": 4,
         "resilience": 5,
         "useMessages": [
             "{user} equips {item}."
@@ -194,7 +194,7 @@ export const ITEM_TEMPLATES = [
         "name": "Short Bow",
         "type": "Weapon",
         "equippableLocation": "left-hand",
-        "damage": 6,
+        "damage": 2,
         "resilience": 20,
         "useMessages": [
             "{user} equips {item}."
@@ -216,7 +216,7 @@ export const ITEM_TEMPLATES = [
         "name": "Wooden Shield",
         "type": "Armor",
         "equippableLocation": "left-hand",
-        "bonusHealth": 10,
+        "plusArmor": 2,
         "resilience": 15,
         "useMessages": [
             "{user} equips {item}."
@@ -227,7 +227,7 @@ export const ITEM_TEMPLATES = [
         "name": "Steel Shield",
         "type": "Armor",
         "equippableLocation": "left-hand",
-        "bonusHealth": 10,
+        "plusArmor": 3,
         "resilience": 30,
         "useMessages": [
             "{user} equips {item}."
@@ -238,7 +238,7 @@ export const ITEM_TEMPLATES = [
         "name": "Leather Helmet",
         "type": "Armor",
         "equippableLocation": "head",
-        "bonusHealth": 10,
+        "plusArmor": 1,
         "resilience": 10,
         "useMessages": [
             "{user} equips {item}."
@@ -249,7 +249,7 @@ export const ITEM_TEMPLATES = [
         "name": "Iron Helmet",
         "type": "Armor",
         "equippableLocation": "head",
-        "bonusHealth": 10,
+        "plusArmor": 3,
         "resilience": 20,
         "useMessages": [
             "{user} equips {item}."
@@ -260,7 +260,7 @@ export const ITEM_TEMPLATES = [
         "name": "Leather Armor",
         "type": "Armor",
         "equippableLocation": "body",
-        "bonusHealth": 10,
+        "plusArmor": 1,
         "resilience": 25,
         "useMessages": [
             "{user} equips {item}."
@@ -271,7 +271,7 @@ export const ITEM_TEMPLATES = [
         "name": "Chainmail Armor",
         "type": "Armor",
         "equippableLocation": "body",
-        "bonusHealth": 10,
+        "plusArmor": 3,
         "resilience": 40,
         "useMessages": [
             "{user} equips {item}."
@@ -281,38 +281,27 @@ export const ITEM_TEMPLATES = [
         "typeid": "armor-boots-travel",
         "name": "Traveler's Boots",
         "type": "Armor",
-        "equippableLocation": "body",
+        "equippableLocation": "feet",
+        "plusArmor": 1,
         "resilience": 8,
         "useMessages": [
             "{user} equips {item}."
         ]
     },
     {
-        "typeid": "trinket-ring-health",
-        "name": "Ring of Vitality",
+        "typeid": "trinket-ring",
+        "name": "Ring",
         "type": "Trinket",
         "equippableLocation": "left-finger",
-        "bonusHealth": 10,
         "useMessages": [
-            "{user} wears {item} and feels healthier."
-        ]
-    },
-    {
-        "typeid": "trinket-ring-mana",
-        "name": "Ring of Focus",
-        "type": "Trinket",
-        "equippableLocation": "left-finger",
-        "bonusMana": 10,
-        "useMessages": [
-            "{user} wears {item} and feels more focused."
+            "It looks so nice."
         ]
     },
     {
         "typeid": "trinket-amulet-protection",
-        "name": "Amulet of Protection",
+        "name": "Amulet",
         "type": "Trinket",
         "equippableLocation": "neck",
-        "bonusHealth": 10,
         "useMessages": [
             "{user} wears {item}. A faint aura surrounds them."
         ]

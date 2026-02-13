@@ -11,7 +11,7 @@ import { Character } from '../character/character';
 export class Player {
   private characterService = inject(CharacterService);
 
-  player = computed(() => this.characterService.getPlayer());
+  player = this.characterService.getPlayer();
 
   constructor() {
     this.characterService.spawnCharacter('player');

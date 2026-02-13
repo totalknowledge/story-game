@@ -11,6 +11,7 @@ export class ItemModel {
     minusToBeHit: number = 0;
     plusDamage: number = 0;
     resilience: number | null = null;
+    armorBonus: number = 0;
     bonusHealth: number = 0;
     bonusMana: number = 0;
     heals: number = 0;

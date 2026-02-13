@@ -11,7 +11,25 @@
             <div class="badge badge-ghost badge-sm">DEAD</div>
             }
         </div>
+        <div class="mt-2">
+            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Stats</h3>
+            <div class="grid grid-cols-3 gap-1">
+                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                    <span class="opacity-60">+Hit:</span>
+                    <span class="font-medium">{{ character().toHit }}</span>
+                </div>
 
+                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                    <span class="opacity-60">Armor:</span>
+                    <span class="font-medium">{{ character().armor }}</span>
+                </div>
+
+                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                    <span class="opacity-60">+Dmg:</span>
+                    <span class="font-medium">{{ character().toDamage }}</span>
+                </div>
+            </div>
+        </div>
         <div class="grid grid-cols-1 gap-2">
             <div class="flex flex-col gap-0.5">
                 <div class="flex justify-between text-[10px] font-bold">
@@ -33,12 +51,14 @@
         </div>
 
         @for (slot of [
-            { label: 'Head', key: 'head' },
-            { label: 'Neck', key: 'neck' },
-            { label: 'Chest', key: 'body' },
-            { label: 'Left Hand', key: 'left-hand' },
-            { label: 'Right Hand', key: 'right-hand' },
-            { label: 'Ring', key: 'left-finger' }
+        { label: 'Head', key: 'head' },
+        { label: 'Neck', key: 'neck' },
+        { label: 'Chest', key: 'body' },
+        { label: 'Left Hand', key: 'left-hand' },
+        { label: 'Right Hand', key: 'right-hand' },
+        { label: 'Ring', key: 'left-finger' },
+        { label: 'Legs', key: 'legs' },
+        { label: 'Feet', key: 'feet' }
         ]; track slot.key) {
         <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
             <span class="opacity-60">{{ slot.label }}:</span>
@@ -62,7 +82,7 @@
         }
 
         <div class="text-[10px] opacity-50 text-right mt-1">
-            📍 {{ character().roomCoordinates }}
+            📍 {{ character().roomCoordinatesKey }}
         </div>
     </div>
 </div>

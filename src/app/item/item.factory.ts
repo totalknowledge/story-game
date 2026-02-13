@@ -8,7 +8,7 @@ import { ITEM_TEMPLATES } from './item.definitions';
 export class ItemFactory {
 
   createItem(typeid: string): ItemModel {
-    const itemTemplate = ITEM_TEMPLATES.find((t) => t.typeid === typeid) as any;
+    const itemTemplate = ITEM_TEMPLATES.find((template) => template.typeid === typeid) as any;
 
     if (!itemTemplate) {
       return this.createFallbackItem(typeid);

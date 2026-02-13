@@ -3,6 +3,8 @@ import { CharacterModel } from './character.model';
 import { ItemFactory } from '../item/item.factory';
 import { ItemModel } from '../item/item.model';
 import { NameService } from '../services/name.service';
+import { pickRandom } from '../utilities/dice.definitions';
+import { ENEMY_TEMPLATES } from './character.definitions';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +12,7 @@ import { NameService } from '../services/name.service';
 export class CharacterService {
   private characterRegistry = signal<Map<string, CharacterModel>>(new Map());
   private itemFactory = inject(ItemFactory);
-  private nameService = inject(NameService)
+  private nameService = inject(NameService);
   readonly playerCharacterId = signal<string | null>(null);
   private readonly MAX_BACKPACK_SIZE = 10;
 
@@ -76,22 +78,42 @@ export class CharacterService {
     return true;
   }
 
-  spawnCharacter(type: string, name?: string): void {
-    const characterName = name ??
-      type === 'player' ? this.nameService.getHeroName() :
-      this.nameService.getEnemyName();
-    const player = new CharacterModel(characterName, 30, 10, {
-      typeid: 'player'
-    });
-    this.registerCharacter(player, true);
-    const items = [this.itemFactory.createRandomItem(['Weapon'])];
+  spawnCharacter(type = 'enemy', name?: string): Signal<CharacterModel> {
+    let characterTemplate: any;
+    const characterName =
+      name ??
+      (type === 'player'
+        ? this.nameService.getHeroName()
+        : this.nameService.getEnemyName());
+    if (type === 'enemy') {
+      characterTemplate = pickRandom(ENEMY_TEMPLATES);
+    } else {
+      characterTemplate = {
+        name: characterName, baseHealth: 30,
+        baseMana: 10, typeid: 'player'
+      } as any;
+    }
+    console.log(characterTemplate);
+    const character = new CharacterModel(
+      characterTemplate.name, characterTemplate.health,
+      characterTemplate.mana, characterTemplate);
+    this.registerCharacter(character, type === 'player');
+
+    this.equipCharacter(type, character);
+    return computed(() => character);
+  }
+
+  equipCharacter(type: string, character: CharacterModel): void {
+    const items: ItemModel[] = [this.itemFactory.createRandomItem(['Weapon'])];
+
     if (items[0].typeid === 'weapon-bow-short') {
       items.push(this.itemFactory.createItem('ammo-arrows'));
     }
+
     items.push(this.itemFactory.createRandomItem(['Armor']));
     items.push(this.itemFactory.createRandomItem(['Consumable']));
 
-    this.acquireItem(player.id, items);
+    this.acquireItem(character.id, items);
   }
 
   registerCharacter(character: CharacterModel, isPlayer = false): void {

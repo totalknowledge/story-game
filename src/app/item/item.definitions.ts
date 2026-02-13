@@ -117,6 +117,7 @@ export const ITEM_TEMPLATES = [
         "name": "Big Stick",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 1,
         "damage": 4,
         "resilience": 5,
         "useMessages": [
@@ -128,6 +129,7 @@ export const ITEM_TEMPLATES = [
         "name": "Iron Sword",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 2,
         "damage": 6,
         "resilience": 25,
         "useMessages": [
@@ -139,6 +141,7 @@ export const ITEM_TEMPLATES = [
         "name": "Steel Sword",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 1,
         "damage": 6,
         "resilience": 35,
         "useMessages": [
@@ -150,6 +153,7 @@ export const ITEM_TEMPLATES = [
         "name": "Magic Blade",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 3,
         "damage": 11,
         "resilience": 66,
         "useMessages": [
@@ -161,6 +165,7 @@ export const ITEM_TEMPLATES = [
         "name": "Battle Axe",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 2,
         "damage": 8,
         "resilience": 30,
         "useMessages": [
@@ -172,6 +177,7 @@ export const ITEM_TEMPLATES = [
         "name": "Heavy Mace",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 1,
         "damage": 7,
         "resilience": 40,
         "useMessages": [
@@ -183,6 +189,7 @@ export const ITEM_TEMPLATES = [
         "name": "Long Spear",
         "type": "Weapon",
         "equippableLocation": "right-hand",
+        "plusArmor": 3,
         "damage": 6,
         "resilience": 30,
         "useMessages": [
@@ -194,6 +201,7 @@ export const ITEM_TEMPLATES = [
         "name": "Short Bow",
         "type": "Weapon",
         "equippableLocation": "left-hand",
+        "plusArmor": 1,
         "damage": 2,
         "resilience": 20,
         "useMessages": [
@@ -260,7 +268,7 @@ export const ITEM_TEMPLATES = [
         "name": "Leather Armor",
         "type": "Armor",
         "equippableLocation": "body",
-        "plusArmor": 1,
+        "plusArmor": 3,
         "resilience": 25,
         "useMessages": [
             "{user} equips {item}."
@@ -271,7 +279,7 @@ export const ITEM_TEMPLATES = [
         "name": "Chainmail Armor",
         "type": "Armor",
         "equippableLocation": "body",
-        "plusArmor": 3,
+        "plusArmor": 5,
         "resilience": 40,
         "useMessages": [
             "{user} equips {item}."
@@ -298,7 +306,7 @@ export const ITEM_TEMPLATES = [
         ]
     },
     {
-        "typeid": "trinket-amulet-protection",
+        "typeid": "trinket-amulet",
         "name": "Amulet",
         "type": "Trinket",
         "equippableLocation": "neck",

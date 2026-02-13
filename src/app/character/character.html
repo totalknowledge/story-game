@@ -1,87 +1,122 @@
-<div class="card w-full lg:w-96 bg-base-200 shadow-xl border-2 transition-all" [ngClass]="{
+<div class="card w-fit bg-base-200 shadow-xl border-4 transition-all" [ngClass]="{
        'border-primary': isPlayer(),
        'border-error': !isPlayer() && !character().isDead,
        'opacity-50 grayscale': character().isDead
      }">
 
-    <div class="card-body p-4 gap-3">
-        <div class="flex justify-between items-start">
+    <div class="card-body p-2">
+        <div class="flex justify-between items-start mb-2">
             <h2 class="card-title text-md font-bold truncate">{{ character().name }}</h2>
             @if (character().isDead) {
             <div class="badge badge-ghost badge-sm">DEAD</div>
             }
         </div>
-        <div class="mt-2">
-            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Stats</h3>
-            <div class="grid grid-cols-3 gap-1">
-                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
-                    <span class="opacity-60">+Hit:</span>
-                    <span class="font-medium">{{ character().toHit }}</span>
+
+        <div class="flex flex-row">
+            <div class="w-64 flex-none flex flex-col gap-3 min-w-0">
+                <div
+                    class="portrait-container w-full h-64 bg-base-300 rounded-lg overflow-hidden border border-base-100 shadow-inner">
+                    <img [src]="'images/' + character().typeid + '.png'" [alt]="character().name"
+                        class="w-full h-full object-cover object-top" onerror="this.src='images/player.png'" />
                 </div>
 
-                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
-                    <span class="opacity-60">Armor:</span>
-                    <span class="font-medium">{{ character().armor }}</span>
+                <div>
+                    <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Stats</h3>
+                    <div class="grid grid-cols-3 gap-1">
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                            <span class="opacity-60">+H</span>
+                            <span class="font-medium">{{ character().toHit }}</span>
+                        </div>
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                            <span class="opacity-60">AC</span>
+                            <span class="font-medium">{{ character().armor }}</span>
+                        </div>
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+                            <span class="opacity-60">+D</span>
+                            <span class="font-medium">{{ character().toDamage }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
-                    <span class="opacity-60">+Dmg:</span>
-                    <span class="font-medium">{{ character().toDamage }}</span>
+                <div class="space-y-2">
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <span>HP</span>
+                            <span>{{ character().currentHealth }}/{{ character().maxHealth }}</span>
+                        </div>
+                        <progress class="progress progress-error w-full h-1.5" [value]="healthPercentage()"
+                            max="100"></progress>
+                    </div>
+                    @if (character().maxMana > 0) {
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <span>MP</span>
+                            <span>{{ character().currentMana }}/{{ character().maxMana }}</span>
+                        </div>
+                        <progress class="progress progress-info w-full h-1.5" [value]="manaPercentage()"
+                            max="100"></progress>
+                    </div>
+                    }
+                </div>
+
+                <div class="grid grid-cols-2 gap-1">
+                    @if (isPlayer()) {
+                        @for (slot of equipementSlots; track slot.key) {
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between">
+                            <span class="opacity-60">{{ slot.label }}:</span>
+                            <span class="truncate font-medium ml-1">
+                                {{ character().equipment.get(slot.key)?.name || '---' }}
+                            </span>
+                        </div>
+                        }
+                    } @else {
+                    <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between">
+                        <span class="opacity-60">Weapon:</span>
+                        <span class="truncate font-medium">
+                            {{ character().equipment.get('right-hand')?.name || '---'}}
+                        </span>
+                    </div>
+                        @if (character().spells.length) {
+                        <div class="mt-2 border-t border-base-100 pt-2">
+                            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
+                            <div class="flex flex-col gap-1">
+                                @for (spell of character().spells; track spell.id) {
+                                <div class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
+                                    {{ spell.name }}
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                    }
                 </div>
             </div>
-        </div>
-        <div class="grid grid-cols-1 gap-2">
-            <div class="flex flex-col gap-0.5">
-                <div class="flex justify-between text-[10px] font-bold">
-                    <span>HP</span>
-                    <span>{{ character().currentHealth }}/{{ character().maxHealth }}</span>
-                </div>
-                <progress class="progress progress-error w-full h-2" [value]="healthPercentage()" max="100"></progress>
-            </div>
 
-            @if (character().maxMana > 0) {
-            <div class="flex flex-col gap-0.5">
-                <div class="flex justify-between text-[10px] font-bold">
-                    <span>MP</span>
-                    <span>{{ character().currentMana }}/{{ character().maxMana }}</span>
+            @if (isPlayer()) {
+            <div class="w-48 flex flex-col gap-3 border-l border-base-100 pl-4">
+                <div>
+                    <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Backpack</h3>
+                    <div class="flex flex-col gap-1">
+                        @for (item of character().items; track item.id) {
+                        <div class="badge badge-neutral text-[9px] h-auto py-1 w-full justify-start truncate">
+                            {{ item.name }}
+                        </div>
+                        } @empty {
+                        <span class="text-[9px] italic opacity-40">Empty</span>
+                        }
+                    </div>
                 </div>
-                <progress class="progress progress-info w-full h-2" [value]="manaPercentage()" max="100"></progress>
+
+                <div class="mt-2">
+                    <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-[9px] opacity-40 italic">No spells known</div>
+                    </div>
+                </div>
             </div>
             }
         </div>
-
-        @for (slot of [
-        { label: 'Head', key: 'head' },
-        { label: 'Neck', key: 'neck' },
-        { label: 'Chest', key: 'body' },
-        { label: 'Left Hand', key: 'left-hand' },
-        { label: 'Right Hand', key: 'right-hand' },
-        { label: 'Ring', key: 'left-finger' },
-        { label: 'Legs', key: 'legs' },
-        { label: 'Feet', key: 'feet' }
-        ]; track slot.key) {
-        <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
-            <span class="opacity-60">{{ slot.label }}:</span>
-            <span class="truncate font-medium">
-                {{ character().equipment.get(slot.key)?.name || '---' }}
-            </span>
-        </div>
-        }
-
-        @if (isPlayer()) {
-        <div class="mt-2 border-t border-base-300 pt-2">
-            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Backpack</h3>
-            <div class="flex flex-wrap gap-1">
-                @for (item of character().items; track item.id) {
-                <div class="badge badge-neutral text-[9px] h-auto py-1">{{ item.name }}</div>
-                } @empty {
-                <span class="text-[9px] italic opacity-40">Empty</span>
-                }
-            </div>
-        </div>
-        }
-
-        <div class="text-[10px] opacity-50 text-right mt-1">
+        <div class="text-[10px] opacity-50 text-right mt-2">
             📍 {{ character().roomCoordinatesKey }}
         </div>
     </div>

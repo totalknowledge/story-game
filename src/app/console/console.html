@@ -1,0 +1,18 @@
+<div
+    class="flex flex-col h-full bg-black text-success font-mono p-4 rounded-box border border-base-content/20 shadow-inner overflow-hidden">
+
+    <div #scrollContainer class="flex-grow overflow-y-auto mb-2 space-y-1 text-s scrollbar-hide">
+        @for (msg of consoleService.messages(); track $index) {
+        <div class="break-words leading-relaxed">
+            <span class="opacity-50">[{{ $index }}]</span> {{ msg }}
+        </div>
+        }
+    </div>
+
+    <div class="flex items-center gap-2 border-t border-success/20 pt-2 bg-black">
+        <span class="text-success font-bold animate-pulse">▶</span>
+        <input type="text" [(ngModel)]="currentInput" (keyup.enter)="submit()"
+            class="bg-transparent border-none outline-none w-full text-success focus:ring-0 caret-success"
+            placeholder="Type command..." autofocus />
+    </div>
+</div>

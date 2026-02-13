@@ -11,7 +11,7 @@ export class ItemModel {
     minusToBeHit: number = 0;
     plusDamage: number = 0;
     resilience: number | null = null;
-    armorBonus: number = 0;
+    plusArmor: number = 0;
     bonusHealth: number = 0;
     bonusMana: number = 0;
     heals: number = 0;
@@ -33,6 +33,7 @@ export class ItemModel {
         this.heals = template.heals ?? 0;
         this.restores = template.restores ?? 0;
         this.plusHit = template.plusHit ?? 0;
+        this.plusArmor = template.plusArmor ?? 0;
         this.minusToBeHit = template.minusToBeHit ?? 0;
         this.plusDamage = template.plusDamage ?? 0;
 

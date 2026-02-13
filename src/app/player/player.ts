@@ -12,8 +12,4 @@ export class Player {
   private characterService = inject(CharacterService);
 
   player = this.characterService.getPlayer();
-
-  constructor() {
-    this.characterService.spawnCharacter('player');
-  }
 }

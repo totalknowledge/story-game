@@ -1,0 +1,29 @@
+<div class="h-screen flex flex-col bg-base-300 overflow-hidden">
+    <app-header class="w-full flex-none h-10"></app-header>
+
+    <div class="flex flex-row flex-grow overflow-hidden p-1">
+        <div class="flex flex-col flex-grow overflow-hidden gap-1">
+            <div class="flex flex-row flex-none gap-1">
+                <div class="flex-none">
+                    <app-player></app-player>
+                </div>
+        
+                <div class="flex-1 bg-base-100 rounded-box shadow-xl border-2 border-base-100 p-4 min-w-[300px]">
+                    <div class="flex items-center justify-center h-full text-xl opacity-20 italic">
+                        Map Display Area
+                    </div>
+                </div>
+            </div>
+        
+            <div class="flex-1 bg-neutral text-neutral-content rounded-box shadow-inner overflow-hidden">
+                <app-console></app-console>
+            </div>
+        </div>
+
+        <div class="flex-none w-auto max-h-full overflow-y-auto pr-2 custom-scrollbar">
+            <div class="flex flex-col gap-4">
+                <app-enemies></app-enemies>
+            </div>
+        </div>
+    </div>
+</div>

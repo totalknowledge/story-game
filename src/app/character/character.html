@@ -32,17 +32,21 @@
             }
         </div>
 
-        <div class="mt-2">
-            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Equipment</h3>
-            <div class="grid grid-cols-2 gap-1">
-                @for (slot of ['Head', 'Neck', 'Chest', 'Left Hand', 'Right Hand', 'Legs', 'Feet']; track slot) {
-                <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
-                    <span class="opacity-60">{{ slot }}:</span>
-                    <span class="truncate font-medium">{{ character().equipment.get(slot)?.name || '---' }}</span>
-                </div>
-                }
-            </div>
+        @for (slot of [
+            { label: 'Head', key: 'head' },
+            { label: 'Neck', key: 'neck' },
+            { label: 'Chest', key: 'body' },
+            { label: 'Left Hand', key: 'left-hand' },
+            { label: 'Right Hand', key: 'right-hand' },
+            { label: 'Ring', key: 'left-finger' }
+        ]; track slot.key) {
+        <div class="text-[10px] bg-base-300 p-1 rounded px-2 flex justify-between">
+            <span class="opacity-60">{{ slot.label }}:</span>
+            <span class="truncate font-medium">
+                {{ character().equipment.get(slot.key)?.name || '---' }}
+            </span>
         </div>
+        }
 
         @if (isPlayer()) {
         <div class="mt-2 border-t border-base-300 pt-2">

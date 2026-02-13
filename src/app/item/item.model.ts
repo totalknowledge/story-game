@@ -24,7 +24,7 @@ export class ItemModel {
         this.typeid = template.typeid;
         this.name = template.name;
         this.type = template.type;
-        this.equippableLocation = template.equippableLocation || this.deriveLocation(template.type);
+        this.equippableLocation = template.equippableLocation || "none";
         this.damage = template.damage ?? 0;
         this.resilience = template.resilience ?? null;
         this.bonusHealth = template.bonusHealth ?? 0;
@@ -37,15 +37,6 @@ export class ItemModel {
 
         this.useMessages = Array.isArray(template.useMessages) ? template.useMessages : [];
         this.teaches = Array.isArray(template.teaches) ? template.teaches : [];
-    }
-
-    private deriveLocation(type: string): EquipLocation {
-        switch (type) {
-            case 'Weapon': return 'hand';
-            case 'Armor': return 'body';
-            case 'Trinket': return 'finger';
-            default: return 'none';
-        }
     }
 
     isDestroyed(): boolean {

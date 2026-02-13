@@ -14,35 +14,68 @@ export class CharacterService {
   readonly playerCharacterId = signal<string | null>(null);
   private readonly MAX_BACKPACK_SIZE = 10;
 
-  acquireItem(characterId: string, item: ItemModel): boolean {
-    const character = this.characterRegistry.get(characterId);
-    if (!character) return false;
-    if (item.equippableLocation !== 'none') {
-      const currentEquipped = character.equipment.get(item.equippableLocation);
+acquireItem(characterId: string, items: ItemModel[]): boolean {
+  const character = this.characterRegistry.get(characterId);
+  if (!character) return false;
 
-      if (!currentEquipped) {
-        character.equipment.set(item.equippableLocation, item);
-        return true;
-      }
+  let anyItemAcquired = false;
+  for (const item of items) {
+    const equipLocation = item.equippableLocation;
+    const canAutoEquip = equipLocation !== 'none' && !character.equipment.has(equipLocation);
+    if (canAutoEquip) {
+      character.items.push(item);
+      this.equipItem(characterId, item.id);
+      anyItemAcquired = true;
+      continue;
     }
     if (character.items.length < this.MAX_BACKPACK_SIZE) {
       character.items.push(item);
+      anyItemAcquired = true;
+    }
+  }
+  return anyItemAcquired;
+}
+
+  equipItem(characterId: string, itemId: string): boolean {
+    const character = this.characterRegistry.get(characterId);
+    if (!character) return false;
+
+    const inventoryIndex = character.items.findIndex((item) => item.id === itemId);
+    if (inventoryIndex < 0) return false;
+
+    const itemToEquip = character.items[inventoryIndex];
+    const equipLocation = itemToEquip.equippableLocation;
+
+    if (equipLocation === 'none') return false;
+
+    const currentlyEquippedItem = character.equipment.get(equipLocation);
+    if (currentlyEquippedItem) {
+      character.items[inventoryIndex] = currentlyEquippedItem;
+      character.equipment.set(equipLocation, itemToEquip);
       return true;
     }
-    return false;
+
+    character.items.splice(inventoryIndex, 1);
+    character.equipment.set(equipLocation, itemToEquip);
+    return true;
   }
 
   spawnCharacter(type: string, name?: string): void {
-    const characterName = name ?? 
+    const characterName = name ??
       type === 'player' ? this.nameService.getHeroName() :
       this.nameService.getEnemyName();
     const player = new CharacterModel(characterName, 30, 10, {
       typeid: 'player'
     });
     this.registerCharacter(player, true);
-    const kit = this.itemFactory.createRandomItem();
-    console.log(kit);
-    this.acquireItem(player.id, kit);
+    const items = [this.itemFactory.createRandomItem(['Weapon'])];
+    if (items[0].typeid === 'weapon-bow-short') {
+      items.push(this.itemFactory.createItem('ammo-arrows'));
+    }
+    items.push(this.itemFactory.createRandomItem());
+
+    console.log(items);
+    this.acquireItem(player.id, items);
   }
 
   registerCharacter(character: CharacterModel, isPlayer: boolean = false): void {

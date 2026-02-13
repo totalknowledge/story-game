@@ -1,4 +1,4 @@
-export type EquipLocation = 'head' | 'body' | 'hand' | 'finger' | 'neck' | 'none';
+export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'neck' | 'none';
 
 export const ITEM_TEMPLATES = [
     {
@@ -105,7 +105,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-dagger-rusty",
         "name": "Rusty Dagger",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 3,
         "resilience": 10,
         "useMessages": [
@@ -116,7 +116,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-big-stick",
         "name": "Big Stick",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 3,
         "resilience": 5,
         "useMessages": [
@@ -127,7 +127,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-sword-iron",
         "name": "Iron Sword",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 6,
         "resilience": 25,
         "useMessages": [
@@ -138,7 +138,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-sword-steel",
         "name": "Steel Sword",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 6,
         "resilience": 35,
         "useMessages": [
@@ -149,7 +149,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-magic-blade",
         "name": "Magic Blade",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 11,
         "resilience": 66,
         "useMessages": [
@@ -160,7 +160,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-axe-battle",
         "name": "Battle Axe",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 8,
         "resilience": 30,
         "useMessages": [
@@ -171,7 +171,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-mace-heavy",
         "name": "Heavy Mace",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 7,
         "resilience": 40,
         "useMessages": [
@@ -182,7 +182,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-spear-long",
         "name": "Long Spear",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "right-hand",
         "damage": 6,
         "resilience": 30,
         "useMessages": [
@@ -193,7 +193,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "weapon-bow-short",
         "name": "Short Bow",
         "type": "Weapon",
-        "equippableLocation": "hand",
+        "equippableLocation": "left-hand",
         "damage": 6,
         "resilience": 20,
         "useMessages": [
@@ -201,10 +201,21 @@ export const ITEM_TEMPLATES = [
         ]
     },
     {
+        "typeid": "ammo-arrows",
+        "name": "Arrow",
+        "type": "Ammo",
+        "equippableLocation": "right-hand",
+        "damage": 6,
+        "quantity": 20,
+        "useMessages": [
+            "{user} uses {item} to attack."
+        ]
+    },
+    {
         "typeid": "armor-shield-wooden",
         "name": "Wooden Shield",
         "type": "Armor",
-        "equippableLocation": "hand",
+        "equippableLocation": "left-hand",
         "bonusHealth": 10,
         "resilience": 15,
         "useMessages": [
@@ -215,7 +226,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "armor-shield-steel",
         "name": "Steel Shield",
         "type": "Armor",
-        "equippableLocation": "hand",
+        "equippableLocation": "left-hand",
         "bonusHealth": 10,
         "resilience": 30,
         "useMessages": [
@@ -280,7 +291,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "trinket-ring-health",
         "name": "Ring of Vitality",
         "type": "Trinket",
-        "equippableLocation": "finger",
+        "equippableLocation": "left-finger",
         "bonusHealth": 10,
         "useMessages": [
             "{user} wears {item} and feels healthier."
@@ -290,7 +301,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "trinket-ring-mana",
         "name": "Ring of Focus",
         "type": "Trinket",
-        "equippableLocation": "finger",
+        "equippableLocation": "left-finger",
         "bonusMana": 10,
         "useMessages": [
             "{user} wears {item} and feels more focused."
@@ -321,7 +332,7 @@ export const ITEM_TEMPLATES = [
         "typeid": "utility-torch",
         "name": "Torch",
         "type": "Utility",
-        "equippableLocation": "hand",
+        "equippableLocation": "left-hand",
         "useMessages": [
             "{user} lights {item}. Shadows retreat slightly."
         ]

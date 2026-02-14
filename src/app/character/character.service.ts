@@ -5,6 +5,7 @@ import { ItemModel } from '../item/item.model';
 import { NameService } from '../services/name.service';
 import { pickRandom } from '../utilities/dice.definitions';
 import { ENEMY_TEMPLATES } from './character.definitions';
+import { SpellFactory } from '../spell/spell.factory';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ import { ENEMY_TEMPLATES } from './character.definitions';
 export class CharacterService {
   private characterRegistry = signal<Map<string, CharacterModel>>(new Map());
   private itemFactory = inject(ItemFactory);
+  private spellFactory = inject(SpellFactory);
   private nameService = inject(NameService);
   readonly playerCharacterId = signal<string | null>(null);
   private readonly MAX_BACKPACK_SIZE = 10;
@@ -78,6 +80,35 @@ export class CharacterService {
     return true;
   }
 
+  public learnSpells(characterId: string, characterTemplate?: any): void {
+    const character = this.characterRegistry().get(characterId);
+    if (!character) return;
+
+    const minimumSpellCount = Math.ceil((character.baseMana || 0) / 10);
+    const existingSpellIds = new Set(character.spells.map(spell => spell.typeid));
+
+    if (characterTemplate?.spellTypeids && Array.isArray(characterTemplate.spellTypeids)) {
+      characterTemplate.spellTypeids.forEach((spellId: string) => {
+        if (!existingSpellIds.has(spellId)) {
+          character.spells.push(this.spellFactory.createSpell(spellId));
+          existingSpellIds.add(spellId);
+        }
+      });
+    }
+
+    while (character.spells.length < minimumSpellCount) {
+      const randomSpell = this.spellFactory.getRandomSpell(Math.round(character.baseMana/3));
+      if (!existingSpellIds.has(randomSpell.typeid)) {
+        character.spells.push(randomSpell);
+        existingSpellIds.add(randomSpell.typeid);
+      }
+    }
+
+    this.characterRegistry.update(currentRegistry =>
+      new Map(currentRegistry).set(character.id, character)
+    );
+  }
+
   spawnCharacter(type = 'enemy', name?: string): Signal<CharacterModel> {
     let characterTemplate: any;
     const characterName =
@@ -90,7 +121,7 @@ export class CharacterService {
     } else {
       characterTemplate = {
         name: characterName, baseHealth: 30,
-        baseMana: 10, typeid: 'player'
+        baseMana: 30, typeid: 'player'
       } as any;
     }
     console.log(characterTemplate);
@@ -99,7 +130,9 @@ export class CharacterService {
       characterTemplate.mana, characterTemplate);
     this.registerCharacter(character, type === 'player');
 
+    this.learnSpells(character.id, characterTemplate);
     this.equipCharacter(type, character);
+    console.log(character);
     return computed(() => character);
   }
 
@@ -126,8 +159,25 @@ export class CharacterService {
     if (isPlayer) this.playerCharacterId.set(character.id);
   }
 
+  public updateCharacter(character: CharacterModel): void {
+    this.characterRegistry.update(registry => {
+      const updatedRegistry = new Map(registry);
+      updatedRegistry.set(character.id, character);
+      return updatedRegistry;
+    });
+  }
+
   getCharacterById(id: string): CharacterModel | undefined {
     return this.characterRegistry().get(id);
+  }
+
+  public getActiveEnemies(): CharacterModel[] {
+    const playerCharacterId = this.playerCharacterId();
+
+    return Array.from(this.characterRegistry().values()).filter(character =>
+      character.id !== playerCharacterId &&
+      !character.isDead
+    );
   }
 
   getPlayer(): Signal<CharacterModel | undefined> {

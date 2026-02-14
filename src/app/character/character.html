@@ -44,8 +44,9 @@
                             <span>HP</span>
                             <span>{{ character().currentHealth }}/{{ character().maxHealth }}</span>
                         </div>
-                        <progress class="progress progress-error w-full h-1.5" [value]="healthPercentage()"
-                            max="100"></progress>
+                        <progress class="progress progress-error w-full h-1.5"
+                            [value]="(character().currentHealth / character().maxHealth) * 100" max="100">
+                        </progress>
                     </div>
                     @if (character().maxMana > 0) {
                     <div class="flex flex-col gap-0.5">
@@ -53,22 +54,50 @@
                             <span>MP</span>
                             <span>{{ character().currentMana }}/{{ character().maxMana }}</span>
                         </div>
-                        <progress class="progress progress-info w-full h-1.5" [value]="manaPercentage()"
-                            max="100"></progress>
+                        <progress class="progress progress-info w-full h-1.5" [value]="100" max="100"></progress>
                     </div>
                     }
                 </div>
 
                 <div class="grid grid-cols-2 gap-1">
                     @if (isPlayer()) {
-                        @for (slot of equipementSlots; track slot.key) {
-                        <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between">
-                            <span class="opacity-60">{{ slot.label }}:</span>
-                            <span class="truncate font-medium ml-1">
-                                {{ character().equipment.get(slot.key)?.name || '---' }}
-                            </span>
+                    @for (slot of equipementSlots; track slot.key) {
+                    @let item = character().equipment.get(slot.key);
+
+                    <div
+                        class="group relative text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
+                        <span class="opacity-60">{{ slot.label }}:</span>
+                        <span class="truncate font-medium ml-1">
+                            {{ item?.name || '---' }}
+                        </span>
+
+                        @if (item) {
+                        <div
+                            class="pointer-events-none absolute left-full top-1/2 ml-2 w-48 -translate-y-1/2 scale-95 rounded bg-neutral p-2 text-xs text-neutral-content opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100 z-50 shadow-xl">
+                            <div class="font-bold border-b border-neutral-content/20 mb-1 pb-1 text-secondary">
+                                {{ item.name }}
+                            </div>
+
+                            @if (item.damage) {
+                            <div class="flex justify-between">
+                                <span>Damage:</span>
+                                <span class="text-error">1d{{ item.damage }}</span>
+                            </div>
+                            }
+
+                            @if (item.bonusHealth) { <div class="text-success">+{{ item.bonusHealth }} Health</div> }
+                            @if (item.bonusMana) { <div class="text-info">+{{ item.bonusMana }} Mana</div> }
+                            @if (item.plusArmor) { <div class="text-warning">+{{ item.plusArmor }} Armor</div> }
+                            @if (item.plusHit) { <div class="text-accent">+{{ item.plusHit }} Hit</div> }
+                            @if (item.plusDamage) { <div class="text-error">+{{ item.plusDamage }} Bonus Dmg</div> }
+
+                            <div
+                                class="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-neutral">
+                            </div>
                         </div>
                         }
+                    </div>
+                    }
                     } @else {
                     <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between">
                         <span class="opacity-60">Weapon:</span>
@@ -76,18 +105,19 @@
                             {{ character().equipment.get('right-hand')?.name || '---'}}
                         </span>
                     </div>
-                        @if (character().spells.length) {
-                        <div class="mt-2 border-t border-base-100 pt-2">
-                            <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
-                            <div class="flex flex-col gap-1">
-                                @for (spell of character().spells; track spell.id) {
-                                <div class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
-                                    {{ spell.name }}
-                                </div>
-                                }
+                    @if (character().spells.length) {
+                    <div class="mt-2 border-t border-base-100 pt-2">
+                        <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
+                        <div class="flex flex-col gap-1">
+                            @for (spell of character().spells; track spell.id) {
+                            <div
+                                class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
+                                {{ spell.name }}
                             </div>
+                            }
                         </div>
-                        }
+                    </div>
+                    }
                     }
                 </div>
             </div>
@@ -107,10 +137,17 @@
                     </div>
                 </div>
 
-                <div class="mt-2">
+                <div class="mt-2 border-t border-base-300 pt-2">
                     <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
                     <div class="flex flex-col gap-1">
-                        <div class="text-[9px] opacity-40 italic">No spells known</div>
+                        @for (spell of character().spells; track spell.typeid) {
+                        <div
+                            class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
+                            {{ spell.name }}
+                        </div>
+                        } @empty {
+                        <span class="text-[9px] italic opacity-40">No spells known</span>
+                        }
                     </div>
                 </div>
             </div>

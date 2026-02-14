@@ -12,15 +12,5 @@ export class Character {
   character = input.required<CharacterModel>();
   equipementSlots = EQUPEMENT_SLOTS;
 
-  healthPercentage = computed(() => {
-    const char = this.character();
-    return (char.currentHealth / char.maxHealth) * 100;
-  });
-
-  manaPercentage = computed(() => {
-    const char = this.character();
-    return char.maxMana > 0 ? (char.currentMana / char.maxMana) * 100 : 0;
-  });
-
   isPlayer = computed(() => this.character().typeid === 'player');
 }

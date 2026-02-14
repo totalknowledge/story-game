@@ -2,9 +2,9 @@ export type CharacterType = 'Player' | 'Enemy';
 
 export const EQUPEMENT_SLOTS = [
     { label: 'Head', key: 'head' },
-    { label: 'Right Hand', key: 'right-hand' },
+    { label: 'Right\u00A0Hand', key: 'right-hand' },
     { label: 'Neck', key: 'neck' },
-    { label: 'Left Hand', key: 'left-hand' },
+    { label: 'Left\u00A0Hand', key: 'left-hand' },
     { label: 'Chest', key: 'body' },
     { label: 'Ring', key: 'left-finger' },
     { label: 'Legs', key: 'legs' },
@@ -99,13 +99,13 @@ export const ENEMY_TEMPLATES = [
         "spellTypeids": ["spell-sonic-screech"]
     },
     {
-        "typeid": "enemy-humanoid-minotaur", "name": "Minotaur", "health": 45, "mana": 0,
+        "typeid": "", "name": "Minotaur", "health": 45, "mana": 0,
         "equippedItemTemplate": { "typeid": "natural-gore", "name": "Gore", "type": "Natural", "damage": 8, "resilience": 999 }
     },
 
     {
         "typeid": "enemy-drake-young", "name": "Young Drake", "health": 50, "mana": 15,
-        "equippedItemTemplate": { "typeid": "natural-bite", "name": "Bite", "type": "Natural", "damage": 7, "resilience": 999 },
+        "equippedItenemy-humanoid-minotauremTemplate": { "typeid": "natural-bite", "name": "Bite", "type": "Natural", "damage": 7, "resilience": 999 },
         "spellTypeids": ["spell-fire-breath-minor"]
     },
     {

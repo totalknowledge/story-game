@@ -104,12 +104,12 @@ export const ENEMY_TEMPLATES = [
     },
 
     {
-        "typeid": "enemy-drake-young", "name": "Young Drake", "health": 50, "mana": 15,
-        "equippedItenemy-humanoid-minotauremTemplate": { "typeid": "natural-bite", "name": "Bite", "type": "Natural", "damage": 7, "resilience": 999 },
+        "typeid": "enemy-drake-whelp", "name": "Dragon Whelp", "health": 50, "mana": 15,
+        "equippedItemTemplate": { "typeid": "natural-bite", "name": "Bite", "type": "Natural", "damage": 7, "resilience": 999 },
         "spellTypeids": ["spell-fire-breath-minor"]
     },
     {
-        "typeid": "enemy-dragon-whelp", "name": "Dragon Whelp", "health": 60, "mana": 25,
+        "typeid": "enemy-dragon-ya", "name": "Dragon", "health": 60, "mana": 25,
         "equippedItemTemplate": { "typeid": "natural-claws", "name": "Claws", "type": "Natural", "damage": 8, "resilience": 999 },
         "spellTypeids": ["spell-fire-breath"]
     },

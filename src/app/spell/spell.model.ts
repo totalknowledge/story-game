@@ -1,4 +1,5 @@
 export class SpellModel {
+    id: string;
     typeid: string;
     name: string;
     damage: number;
@@ -9,6 +10,7 @@ export class SpellModel {
     castMessages: string[];
 
     constructor(template: any = {}) {
+        this.id = crypto.randomUUID();
         this.typeid = template.typeid;
         this.name = template.name;
         this.damage = template.damage ?? 0;

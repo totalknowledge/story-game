@@ -99,7 +99,7 @@ export const ENEMY_TEMPLATES = [
         "spellTypeids": ["spell-sonic-screech"]
     },
     {
-        "typeid": "", "name": "Minotaur", "health": 45, "mana": 0,
+        "typeid": "enemy-humanoid-minotaur", "name": "Minotaur", "health": 45, "mana": 0,
         "equippedItemTemplate": { "typeid": "natural-gore", "name": "Gore", "type": "Natural", "damage": 8, "resilience": 999 }
     },
 

@@ -79,8 +79,8 @@ export class CharacterService {
     const characterName =
       name ??
       (type === 'player'
-        ? this.nameService.getHeroName()
-        : this.nameService.getEnemyName());
+        ? this.nameService.getHeroName('male').name
+        : this.nameService.getEnemyName().name);
     if (type === 'enemy') {
       characterTemplate = pickRandom(ENEMY_TEMPLATES);
     } else {

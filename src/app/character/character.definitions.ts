@@ -58,16 +58,16 @@ export const ENEMY_TEMPLATES = [
 
     {
         "typeid": "enemy-humanoid-apprentice-mage", "name": "Dark Apprentice", "health": 14, "mana": 10,
-        "spellTypeids": ["spell-shadow-bolt"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-cultist", "name": "Cursed Cultist", "health": 16, "mana": 12,
-        "spellTypeids": ["spell-shadow-bolt", "spell-weak-curse"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-fire-sprite", "name": "Fire Sprite", "health": 10, "mana": 20,
         "equippedItemTemplate": { "typeid": "natural-burn", "name": "Burning Touch", "type": "Natural", "damage": 2, "resilience": 999 },
-        "spellTypeids": ["spell-fire-spark"]
+        "spellTypeids": ["spell-fireball"]
     },
     {
         "typeid": "enemy-ice-wisp", "name": "Ice Wisp", "health": 12, "mana": 18,
@@ -76,18 +76,18 @@ export const ENEMY_TEMPLATES = [
     },
     {
         "typeid": "enemy-humanoid-necromancer", "name": "Necromancer", "health": 25, "mana": 35,
-        "spellTypeids": ["spell-shadow-bolt", "spell-life-drain", "spell-raise-bones"]
+        "spellTypeids": []
     },
 
     {
         "typeid": "enemy-humanoid-ghost", "name": "Restless Ghost", "health": 18, "mana": 25,
         "equippedItemTemplate": { "typeid": "natural-haunt", "name": "Haunting Touch", "type": "Natural", "damage": 3, "resilience": 999 },
-        "spellTypeids": ["spell-fear-whisper"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-shadow-stalker", "name": "Shadow Stalker", "health": 22, "mana": 15,
         "equippedItemTemplate": { "typeid": "natural-claws", "name": "Claws", "type": "Natural", "damage": 5, "resilience": 999 },
-        "spellTypeids": ["spell-shadow-step"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-animated-armor", "name": "Animated Armor", "health": 30, "mana": 0,
@@ -96,7 +96,7 @@ export const ENEMY_TEMPLATES = [
     {
         "typeid": "enemy-harpy", "name": "Harpy", "health": 20, "mana": 10,
         "equippedItemTemplate": { "typeid": "natural-talons", "name": "Talons", "type": "Natural", "damage": 4, "resilience": 999 },
-        "spellTypeids": ["spell-sonic-screech"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-minotaur", "name": "Minotaur", "health": 45, "mana": 0,
@@ -106,24 +106,24 @@ export const ENEMY_TEMPLATES = [
     {
         "typeid": "enemy-drake-whelp", "name": "Dragon Whelp", "health": 50, "mana": 15,
         "equippedItemTemplate": { "typeid": "natural-bite", "name": "Bite", "type": "Natural", "damage": 7, "resilience": 999 },
-        "spellTypeids": ["spell-fire-breath-minor"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-dragon-ya", "name": "Dragon", "health": 60, "mana": 25,
         "equippedItemTemplate": { "typeid": "natural-claws", "name": "Claws", "type": "Natural", "damage": 8, "resilience": 999 },
-        "spellTypeids": ["spell-fire-breath"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-dungeon-guardian", "name": "Dungeon Guardian", "health": 80, "mana": 20,
         "equippedItemTemplate": { "typeid": "natural-slam", "name": "Crushing Slam", "type": "Natural", "damage": 10, "resilience": 999 },
-        "spellTypeids": ["spell-warding-pulse"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-warlock-lord", "name": "Warlock Lord", "health": 70, "mana": 60,
-        "spellTypeids": ["spell-shadow-bolt", "spell-life-drain", "spell-fire-spark", "spell-shadow-step"]
+        "spellTypeids": []
     },
     {
         "typeid": "enemy-humanoid-lich", "name": "Lich", "health": 100, "mana": 100,
-        "spellTypeids": ["spell-shadow-bolt", "spell-life-drain", "spell-raise-bones", "spell-fear-whisper", "spell-death-nova"]
+        "spellTypeids": ["spell-vampiric-touch", "spell-drain-life", "spell-magicmissle"]
     }
 ];

@@ -9,7 +9,7 @@ import { pickRandom } from '../utilities/dice.definitions';
 export class SpellFactory {
   
   createSpell(typeid: string): SpellModel {
-    const template = SPELL_TEMPLATES.find((t) => t.typeid === typeid);
+    const template = SPELL_TEMPLATES.find((template) => template.typeid === typeid);
     
     if (!template) {
       return new SpellModel({ 

@@ -16,6 +16,7 @@ export class CharacterModel {
     spells: any[] = [];
     dead: boolean = false;
     roomCoordinatesKey: string = '0,0,0';
+    combatRating?: number;
 
     constructor(name: string, health: number, mana: number, template: any = {}) {
         this.name = name;

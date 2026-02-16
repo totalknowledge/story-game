@@ -91,7 +91,7 @@ export function applyCombatRatingCalculation(character: CharacterModel): void {
         armorComponent +
         healingComponent;
 
-    character.combatRating = Math.max(physicalCR, magicalCR);
+    character.combatRating = Math.round(Math.max(physicalCR, magicalCR));
 }
 
 function getAverageWeaponDamage(character: CharacterModel): number {

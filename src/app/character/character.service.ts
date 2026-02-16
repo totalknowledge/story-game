@@ -13,6 +13,7 @@ import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculati
 })
 export class CharacterService {
   private characterRegistry = signal<Map<string, CharacterModel>>(new Map());
+  private charactersInRoom = this.characterRegistry;
   private itemFactory = inject(ItemFactory);
   private spellFactory = inject(SpellFactory);
   private nameService = inject(NameService);
@@ -33,17 +34,28 @@ export class CharacterService {
     return acquired;
   }
 
-  equipItem(characterId: string, item: ItemModel): boolean {
+  equipItem(characterId: string, item: ItemModel): string[] {
     const character = this.characterRegistry().get(characterId);
-    if (!character) return false;
+    if (!character) return ['Character not found.'];
 
     const slot = item.equippableLocation;
-    if (slot === 'none' || character.equipment.has(slot)) return false;
+    if (slot === 'none') return [`The ${item.name} cannot be equipped.`];
 
+    const results: string[] = [];
+    const existingItem = character.equipment.get(slot);
+
+    if (existingItem) {
+      character.items.push(existingItem);
+      results.push(`You unequip the ${existingItem.name}.`);
+    }
     character.equipment.set(slot, item);
-    character.items = character.items.filter(i => i !== item);
+    character.items = character.items.filter(inventoryItem => inventoryItem !== item);
+
+    results.push(`You equip the ${item.name}.`);
     applyBonusCalculation(character);
-    return true;
+    this.updateCharacter(character);
+
+    return results;
   }
 
   public seedSpells(character: CharacterModel, characterTemplate?: any): void {
@@ -86,7 +98,7 @@ export class CharacterService {
     } else {
       characterTemplate = {
         name: characterName, baseHealth: 30,
-        baseMana: 10, typeid: 'player'
+        baseMana: 50, typeid: 'player'
       } as any;
     }
     const character = new CharacterModel(
@@ -160,10 +172,26 @@ export class CharacterService {
     );
   }
 
+  public getCharactersInRoom(): CharacterModel[] {
+    return Array.from(this.charactersInRoom().values());
+  }
+
   getPlayer(): Signal<CharacterModel | undefined> {
     return computed(() => {
       const id = this.playerCharacterId;
       return id ? this.characterRegistry().get(id) : undefined;
     });
+  }
+
+  public movePlayer(coordinates: { x: number, y: number, z: number; }): void {
+    const id = this.playerCharacterId;
+    if (!id) return;
+
+    const character = this.characterRegistry().get(id);
+    if (character) {
+      character.roomCoordinatesKey = `${coordinates.x},${coordinates.y},${coordinates.z}`;
+
+      this.characterRegistry.update(registry => new Map(registry).set(id, character));
+    }
   }
 }

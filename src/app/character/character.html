@@ -6,7 +6,7 @@
 
     <div class="card-body p-2">
         <div class="flex justify-between items-start mb-2">
-            <h2 class="card-title text-md font-bold truncate">{{ character().name }}</h2>
+            <h2 class="card-title text-md font-bold truncate">{{ character().name }}  CR: {{character().combatRating}}</h2>
             @if (character().isDead) {
             <div class="badge badge-ghost badge-sm">DEAD</div>
             }

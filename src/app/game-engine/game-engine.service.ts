@@ -2,20 +2,17 @@ import { inject, Injectable } from '@angular/core';
 import { CharacterModel } from '../character/character.model';
 import { ItemModel } from '../item/item.model';
 import { CharacterService } from '../character/character.service';
+import { MapService } from '../map/map.service';
+import { Direction } from '../map/room/room.definitions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameEngineService {
-  lookAround() {
-    throw new Error('Method not implemented.');
-  }
-  movePlayer(command: string) {
-    throw new Error('Method not implemented.');
-  }
   private readonly MISS_THRESHOLD = 10;
   private readonly CRITICAL_THRESHOLD = 95;
   private characterService = inject(CharacterService);
+  private mapService = inject(MapService);
 
   attack(attacker: CharacterModel, defender: CharacterModel): string[] {
     const combatLog: string[] = [];
@@ -45,6 +42,109 @@ export class GameEngineService {
     this.characterService.updateCharacter(defender);
 
     return combatLog;
+  }
+
+  lookAround(): string[] {
+    const currentRoom = this.mapService.currentRoom();
+    const player = this.characterService.getPlayer()();
+
+    if (!currentRoom) {
+      return ["You are lost in the void."];
+    }
+    const viewLines: string[] = [];
+    viewLines.push(`[${currentRoom.typeid?.toUpperCase() || 'Room'}]`);
+    viewLines.push(currentRoom.description);
+
+    const enemiesHere = this.characterService.getActiveEnemies().filter(enemy =>
+      enemy.roomCoordinatesKey === player?.roomCoordinatesKey && enemy.id !== player?.id
+    );
+
+    if (enemiesHere.length > 0) {
+      viewLines.push("Occupants:");
+      enemiesHere.forEach(enemy => {
+        viewLines.push(` - ${enemy.name} is here (${enemy.currentHealth} HP).`);
+      });
+    }
+    viewLines.push(...currentRoom.getDirections());
+
+    return viewLines;
+  }
+
+  movePlayer(command: string): string[] {
+    const direction = command as Direction;
+
+    const moveResults = this.mapService.move(direction);
+
+    const currentRoom = this.mapService.currentRoom();
+    if (currentRoom?.coordinates) {
+      this.characterService.movePlayer(currentRoom.coordinates);
+    }
+
+    return moveResults;
+  }
+
+  searchCorpse(player: CharacterModel, targetName: string): string[] {
+    console.log('it makes it this far')
+    const output: string[] = [];
+    const playerLocation = player.roomCoordinatesKey;
+
+    const allCharacters = this.characterService.getCharactersInRoom();
+
+    const corpses = allCharacters.filter(character =>
+      character.roomCoordinatesKey === playerLocation &&
+      character.isDead &&
+      character.id !== player.id
+    );
+    if (corpses.length === 0) return ['There are no corpses here to search.'];
+
+    const targetsToSearch = (targetName === 'all' || !targetName)
+      ? corpses
+      : corpses.filter(c => c.name.toLowerCase().includes(targetName.toLowerCase()));
+
+    if (targetsToSearch.length === 0) {
+      return [`You find no corpses matching "${targetName}".`];
+    }
+    console.log(targetsToSearch);
+    targetsToSearch.forEach(corpse => {
+      output.push(`You search the remains of ${corpse.name}...`);
+
+      const equippedLoot = Array.from(corpse.equipment.values()).filter(
+        (item: ItemModel) => item.type != 'Natural'
+      );
+      const allLoot = [...equippedLoot, ...corpse.items];
+      if (allLoot.length === 0) {
+        output.push(` - The ${corpse.name} had nothing of value.`);
+        return;
+      }
+
+      corpse.items = [];
+
+      allLoot.forEach(item => {
+        const targetSlot = item.equippableLocation;
+
+        if (targetSlot !== 'none' && !player.equipment.has(targetSlot)) {
+          this.characterService.equipItem(player.id, item);
+          output.push(` - You found and equipped: ${item.name}.`);
+          return;
+        }
+
+        const wasAcquired = this.characterService.acquireItem(player.id, [item]);
+        if (wasAcquired) {
+          output.push(` - You found and stowed: ${item.name}.`);
+        } else {
+          const room = this.mapService.currentRoom();
+          if (room) {
+            room.items.push(item);
+            output.push(` - Your pack is full! You dropped ${item.name} on the floor.`);
+          }
+        }
+      });
+
+      this.characterService.updateCharacter(corpse);
+    });
+    this.characterService.updateCharacter(player);
+
+    return output;
   }
 
   private isMiss(rawRoll: number, modifiedRoll: number): boolean {

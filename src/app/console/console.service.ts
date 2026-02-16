@@ -6,7 +6,7 @@ import { CharacterService } from '../character/character.service';
 export class ConsoleService {
   private engine = inject(GameEngineService);
   private characterService = inject(CharacterService);
-  readonly messages = signal<string[]>(['System initialized...', 'Welcome, adventurer.']);
+  readonly messages = signal<string[]>(['Welcome, adventurer.  This is Althea... a beautiful place plagued with monsters.']);
 
   log(message: string): void {
     this.messages.update(previous => [...previous, message]);
@@ -22,37 +22,47 @@ export class ConsoleService {
     const action = inputParts[0];
     const targetName = inputParts.slice(1).join(' ');
 
+    let output: string[] = [];
+
     switch (action) {
       case 'help':
-        this.log('Commands: north, south, east, west, look, loot, equip [item], attack [enemy]');
+        output = ['Commands: north, south, east, west, look, search, equip [item], attack [enemy]'];
         break;
       case 'attack':
-        this.handleAttack(targetName);
+        output = this.handleAttack(targetName);
         break;
       case 'cast':
         this.handleCast(targetName);
         break;
+      case 'equip':
+        output = this.handleEquip(targetName);
+        break;
       case 'look':
-        this.engine.lookAround();
+        output = this.engine.lookAround();
         break;
       case 'north': case 'south': case 'east': case 'west':
-        this.engine.movePlayer(action);
+        output = this.engine.movePlayer(action);
+        break;
+      case 'search':
+        output = this.handleSearch(targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
     }
+    output.forEach(line => this.log(line));
   }
 
-  private handleAttack(targetName: string): void {
+  private handleAttack(targetName: string): string[] {
     const player = this.characterService.getPlayer()();
+    const output: string[] = [];
     if (!player || player.isDead) {
-      this.log('You are Dead and cannot attack.');
-      return;
+      output.push('You are Dead and cannot attack.');
+      return output;
     }
 
     if (!targetName) {
-      this.log('Attack whom?');
-      return;
+      output.push('Attack whom?');
+      return output;
     }
 
     const roomEnemies = this.characterService.getActiveEnemies();
@@ -61,12 +71,13 @@ export class ConsoleService {
     );
 
     if (!target) {
-      this.log(`There is no "${targetName}" here to attack.`);
-      return;
+      output.push(`There is no "${targetName}" here to attack.`);
+      return output;
     }
 
     const combatResults = this.engine.attack(player, target);
-    combatResults.forEach(result => this.log(result));
+    combatResults.forEach(result => output.push(result));
+    return output;
   }
 
   private handleCast(commandArguments: string): void {
@@ -104,5 +115,28 @@ export class ConsoleService {
 
     const combatResults = this.engine.cast(player, selectedSpell, potentialTarget);
     combatResults.forEach(line => this.log(line));
+  }
+
+  private handleEquip(itemName: string): string[] {
+    const player = this.characterService.getPlayer()();
+    if (!player || player.isDead) return ['You are dead and cannot change equipment.'];
+    if (!itemName) return ['Equip what?'];
+
+    const itemToEquip = player.items.find(inventoryItem =>
+      inventoryItem.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+
+    if (!itemToEquip) {
+      return [`You are not carrying a "${itemName}".`];
+    }
+
+    return this.characterService.equipItem(player.id, itemToEquip);
+  }
+
+  handleSearch(targetName: string): string[] {
+    const player = this.characterService.getPlayer()();
+    if (!player || player.isDead) return ['You cannot search while dead.'];
+
+    return this.engine.searchCorpse(player, targetName);
   }
 }

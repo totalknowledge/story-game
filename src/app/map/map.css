@@ -1,0 +1,101 @@
+.map-shell {
+    --map-scale: 2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.map-grid {
+    --map-cols: 1;
+    display: grid;
+    grid-template-columns: repeat(var(--map-cols), calc(1.6rem * var(--map-scale)));
+    grid-auto-rows: calc(1.6rem * var(--map-scale));
+    gap: calc(0.25rem * var(--map-scale));
+    align-self: flex-start;
+    padding: calc(0.6rem * var(--map-scale));
+    border: 2px solid rgba(0, 0, 0, 0.55);
+    border-radius: calc(0.6rem * var(--map-scale));
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.map-cell {
+    display: grid;
+    place-items: center;
+    border-radius: calc(0.35rem * var(--map-scale));
+    user-select: none;
+    line-height: 1;
+}
+
+.map-cell--hidden {
+    background: rgba(0, 0, 0, 0);
+    border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.map-cell--visible {
+    background: rgba(0, 0, 0, 0.18);
+    border: 2px solid rgba(0, 0, 0, 0.55);
+}
+
+.map-cell--player {
+    background: rgba(0, 0, 0, 0.28);
+    border: 2px solid rgba(0, 0, 0, 0.75);
+}
+
+.map-glyph {
+    display: inline-grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: calc(1.05rem * var(--map-scale));
+}
+
+/* Exit "breaks" in the outline */
+.map-cell--open-north {
+    border-top-color: transparent;
+}
+
+.map-cell--open-south {
+    border-bottom-color: transparent;
+}
+
+.map-cell--open-east {
+    border-right-color: transparent;
+}
+
+.map-cell--open-west {
+    border-left-color: transparent;
+}
+
+/* Legend */
+.map-legend {
+    display: flex;
+    gap: calc(1rem * var(--map-scale));
+    flex-wrap: wrap;
+    font-size: calc(0.9rem * var(--map-scale));
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(0.45rem * var(--map-scale));
+}
+
+.legend-glyph {
+    width: calc(1.2rem * var(--map-scale));
+    height: calc(1.2rem * var(--map-scale));
+    display: grid;
+    place-items: center;
+    border-radius: calc(0.35rem * var(--map-scale));
+    border: 2px solid rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.legend-glyph--visited {
+    color: transparent;
+}
+
+.legend-glyph--hidden {
+    background: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0.15);
+}

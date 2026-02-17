@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, Signal, signal } from '@angular/core';
+import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { CharacterModel } from './character.model';
 import { ItemFactory } from '../item/item.factory';
 import { ItemModel } from '../item/item.model';
@@ -6,14 +6,14 @@ import { NameService } from '../services/name.service';
 import { d100, pickRandom } from '../utilities/dice.definitions';
 import { ENEMY_TEMPLATES } from './character.definitions';
 import { SpellFactory } from '../spell/spell.factory';
-import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation } from './rules/character.rules';
+import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation, equipCharacter } from './rules/character.rules';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CharacterService {
-  private characterRegistry = signal<Map<string, CharacterModel>>(new Map());
-  private charactersInRoom = this.characterRegistry;
+  private characterRegistry: Map<string, CharacterModel> = new Map();
+  private charactersInRoom: WritableSignal<Map<string, CharacterModel>> = signal(new Map());
   private itemFactory = inject(ItemFactory);
   private spellFactory = inject(SpellFactory);
   private nameService = inject(NameService);
@@ -21,24 +21,24 @@ export class CharacterService {
   private readonly MAX_BACKPACK_SIZE = 10;
 
   acquireItem(characterId: string, items: ItemModel[]): boolean {
-    const character = this.characterRegistry().get(characterId);
+    const character = this.charactersInRoom().get(characterId);
     if (!character) return false;
 
     const { acquired } = applyItemAcquisition(character, items, this.MAX_BACKPACK_SIZE);
 
     applyCombatRatingCalculation(character);
     if (acquired) {
-      this.characterRegistry.update(registry => new Map(registry).set(characterId, character));
+      this.charactersInRoom.update(registry => new Map(registry).set(characterId, character));
     }
 
     return acquired;
   }
 
   equipItem(characterId: string, item: ItemModel): string[] {
-    const character = this.characterRegistry().get(characterId);
+    const character = this.charactersInRoom().get(characterId);
     if (!character) return ['Character not found.'];
 
-    const slot = item.equippableLocation;
+    const slot: string = item.equippableLocation ?? 'none';
     if (slot === 'none') return [`The ${item.name} cannot be equipped.`];
 
     const results: string[] = [];
@@ -81,7 +81,7 @@ export class CharacterService {
       }
     }
 
-    this.characterRegistry.update(currentRegistry =>
+    this.charactersInRoom.update(currentRegistry =>
       new Map(currentRegistry).set(character.id, character)
     );
   }
@@ -125,57 +125,16 @@ export class CharacterService {
       characterTemplate.name, characterTemplate.health,
       characterTemplate.mana, characterTemplate);
     this.seedSpells(character, characterTemplate);
-
+    console.log(characterTemplate);
     this.registerCharacter(character, type === 'player');
-    this.equipCharacter(character, characterTemplate);
-    console.log(`Spawned ${type}:`, character);
+    equipCharacter(character, this.itemFactory, characterTemplate);
+    console.log(character)
     return computed(() => character);
   }
 
-  equipCharacter(character: CharacterModel, characterTemplate?: any): void {
-    const items: ItemModel[] = [];
-
-    if (characterTemplate?.equippedItemTemplate) {
-      const naturalWeapon = new ItemModel({
-        ...characterTemplate.equippedItemTemplate,
-        equippableLocation: 'right-hand',
-        isNatural: true
-      });
-      items.push(naturalWeapon);
-    } else {
-      items.push(this.itemFactory.createRandomItem(['Weapon']));
-    }
-
-    let lootCount = this.randomInt(0, Math.ceil(character.maxHealth / 10));
-    if (character.classification === 'elite') {
-      lootCount++;
-    } else if (character.classification === 'unique') {
-      lootCount += 2;
-    }
-
-    for (let i = 0; i < lootCount; i++) {
-      if (character.classification === 'unique' && i === 0) {
-        items.push(this.itemFactory.createRandomItem(['weapon', 'armor', 'trinket', 'scroll', 'spellbook']));
-      } else if (character.classification === 'elite' && i === 0) {
-        items.push(this.itemFactory.createRandomItem(['weapon', 'armor', 'trinket']));
-      } else {
-        items.push(this.itemFactory.createRandomItem());
-      }
-    }
-
-    if (items[0]?.typeid === 'weapon-bow-short') {
-      items.push(this.itemFactory.createItem('ammo-arrows'));
-    }
-
-    this.acquireItem(character.id, items);
-  }
-
-  private randomInt(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
   registerCharacter(character: CharacterModel, isPlayer = false): void {
-    this.characterRegistry.update((registry) => {
+    this.characterRegistry.set(character.id, character);
+    this.charactersInRoom.update((registry) => {
       const nextRegistry = new Map(registry);
       nextRegistry.set(character.id, character);
       return nextRegistry;
@@ -185,7 +144,7 @@ export class CharacterService {
   }
 
   public updateCharacter(character: CharacterModel): void {
-    this.characterRegistry.update(registry => {
+    this.charactersInRoom.update(registry => {
       const updatedRegistry = new Map(registry);
       updatedRegistry.set(character.id, character);
       return updatedRegistry;
@@ -193,11 +152,11 @@ export class CharacterService {
   }
 
   getCharacterById(id: string): CharacterModel | undefined {
-    return this.characterRegistry().get(id);
+    return this.charactersInRoom().get(id);
   }
 
   public getActiveEnemies(): CharacterModel[] {
-    return Array.from(this.characterRegistry().values()).filter(character =>
+    return Array.from(this.charactersInRoom().values()).filter(character =>
       character.id !== this.playerCharacterId &&
       !character.isDead
     );
@@ -210,7 +169,7 @@ export class CharacterService {
   getPlayer(): Signal<CharacterModel | undefined> {
     return computed(() => {
       const id = this.playerCharacterId;
-      return id ? this.characterRegistry().get(id) : undefined;
+      return id ? this.charactersInRoom().get(id) : undefined;
     });
   }
 
@@ -218,11 +177,11 @@ export class CharacterService {
     const id = this.playerCharacterId;
     if (!id) return;
 
-    const character = this.characterRegistry().get(id);
+    const character = this.charactersInRoom().get(id);
     if (character) {
       character.roomCoordinatesKey = `${coordinates.x},${coordinates.y},${coordinates.z}`;
 
-      this.characterRegistry.update(registry => new Map(registry).set(id, character));
+      this.charactersInRoom.update(registry => new Map(registry).set(id, character));
     }
   }
 }

@@ -1,14 +1,15 @@
 <div class="card w-fit bg-base-200 shadow-xl border-4 transition-all" [ngClass]="{
-       'border-primary': isPlayer(),
-       'border-error': !isPlayer() && !character().isDead && character().classification === 'normal',
-       'border-neutral': !isPlayer() && !character().isDead && character().classification === 'elite',
-       'border-warning': !isPlayer() && !character().isDead && character().classification === 'unique',
-       'opacity-50 grayscale': character().isDead
-     }">
-
+    'border-primary': isPlayer(),
+    'border-error': !isPlayer() && !character().isDead && character().classification === 'normal',
+    'border-neutral': !isPlayer() && !character().isDead && character().classification === 'elite',
+    'border-warning': !isPlayer() && !character().isDead && character().classification === 'unique',
+    'opacity-50 grayscale': character().isDead
+  }">
     <div class="card-body p-2">
         <div class="flex justify-between items-start mb-2">
-            <h2 class="card-title text-md font-bold truncate">{{ character().name }}  CR: {{character().combatRating}}</h2>
+            <h2 class="card-title text-md font-bold truncate">
+                {{ character().name }} CR: {{ character().combatRating }}
+            </h2>
             @if (character().isDead) {
             <div class="badge badge-ghost badge-sm">DEAD</div>
             }
@@ -47,16 +48,17 @@
                             <span>{{ character().currentHealth }}/{{ character().maxHealth }}</span>
                         </div>
                         <progress class="progress progress-error w-full h-1.5"
-                            [value]="(character().currentHealth / character().maxHealth) * 100" max="100">
-                        </progress>
+                            [value]="(character().currentHealth / character().maxHealth) * 100" max="100"></progress>
                     </div>
+
                     @if (character().maxMana > 0) {
                     <div class="flex flex-col gap-0.5">
                         <div class="flex justify-between text-[10px] font-bold">
                             <span>MP</span>
                             <span>{{ character().currentMana }}/{{ character().maxMana }}</span>
                         </div>
-                        <progress class="progress progress-info w-full h-1.5" [value]="100" max="100"></progress>
+                        <progress class="progress progress-info w-full h-1.5"
+                            [value]="(character().currentMana / character().maxMana) * 100" max="100"></progress>
                     </div>
                     }
                 </div>
@@ -64,58 +66,40 @@
                 <div class="grid grid-cols-2 gap-1">
                     @if (isPlayer()) {
                     @for (slot of equipementSlots; track slot.key) {
-                    @let item = character().equipment.get(slot.key);
+                    @let equippedItem = character().equipment.get(slot.key);
 
-                    <div
-                        class="group relative text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
-                        <span class="opacity-60">{{ slot.label }}:</span>
-                        <span class="truncate font-medium ml-1">
-                            {{ item?.name || '---' }}
-                        </span>
-
-                        @if (item) {
-                        <div
-                            class="pointer-events-none absolute left-full top-1/2 ml-2 w-48 -translate-y-1/2 scale-95 rounded bg-neutral p-2 text-xs text-neutral-content opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100 z-50 shadow-xl">
-                            <div class="font-bold border-b border-neutral-content/20 mb-1 pb-1 text-secondary">
-                                {{ item.name }}
-                            </div>
-
-                            @if (item.damage) {
-                            <div class="flex justify-between">
-                                <span>Damage:</span>
-                                <span class="text-error">1d{{ item.damage }}</span>
-                            </div>
-                            }
-
-                            @if (item.bonusHealth) { <div class="text-success">+{{ item.bonusHealth }} Health</div> }
-                            @if (item.bonusMana) { <div class="text-info">+{{ item.bonusMana }} Mana</div> }
-                            @if (item.plusArmor) { <div class="text-warning">+{{ item.plusArmor }} Armor</div> }
-                            @if (item.plusHit) { <div class="text-accent">+{{ item.plusHit }} Hit</div> }
-                            @if (item.plusDamage) { <div class="text-error">+{{ item.plusDamage }} Bonus Dmg</div> }
-
-                            <div
-                                class="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-neutral">
-                            </div>
+                    <app-tooltip [entry]="equippedItem" direction="right">
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
+                            <span class="opacity-60">{{ slot.label }}:</span>
+                            <span class="truncate font-medium ml-1">
+                                {{ equippedItem?.name || '---' }}
+                            </span>
                         </div>
-                        }
-                    </div>
+                    </app-tooltip>
                     }
                     } @else {
-                    <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between">
-                        <span class="opacity-60">Weapon:</span>
-                        <span class="truncate font-medium">
-                            {{ character().equipment.get('right-hand')?.name || '---'}}
-                        </span>
-                    </div>
+                    @let enemyWeapon = character().equipment.get('right-hand');
+
+                    <app-tooltip [entry]="enemyWeapon" direction="top">
+                        <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
+                            <span class="opacity-60">Weapon:</span>
+                            <span class="truncate font-medium">
+                                {{ enemyWeapon?.name || '---' }}
+                            </span>
+                        </div>
+                    </app-tooltip>
+
                     @if (character().spells.length) {
-                    <div class="mt-2 border-t border-base-100 pt-2">
-                        <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
+                    <div class="mt-2 border-t border-base-100 pt-2 col-span-2">
+                        <h3 class="text-[10px] font-bold uppercase mb-1">Spells</h3>
                         <div class="flex flex-col gap-1">
-                            @for (spell of character().spells; track spell.id) {
-                            <div
-                                class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
-                                {{ spell.name }}
-                            </div>
+                            @for (spell of character().spells; track spell.typeid) {
+                            <app-tooltip [entry]="spell" direction="top" widthClass="w-64">
+                                <div
+                                    class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
+                                    {{ spell.name }}
+                                </div>
+                            </app-tooltip>
                             }
                         </div>
                     </div>
@@ -129,12 +113,15 @@
                 <div>
                     <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Backpack</h3>
                     <div class="flex flex-col gap-1">
-                        @for (item of character().items; track item.id) {
-                        <div class="badge badge-neutral text-[9px] h-auto py-1 w-full justify-start truncate">
-                            {{ item.name }}
-                        </div>
+                        @for (inventoryItem of character().items; track inventoryItem.id) {
+                        <app-tooltip [entry]="inventoryItem" direction="right">
+                            <div
+                                class="badge badge-neutral text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
+                                {{ inventoryItem.name }}
+                            </div>
+                        </app-tooltip>
                         } @empty {
-                        <span class="text-[9px] italic opacity-40">Empty</span>
+                        <span class="text-[10px] italic opacity-40">Empty</span>
                         }
                     </div>
                 </div>
@@ -143,18 +130,21 @@
                     <h3 class="text-[10px] font-bold uppercase opacity-50 mb-1">Spells</h3>
                     <div class="flex flex-col gap-1">
                         @for (spell of character().spells; track spell.typeid) {
-                        <div
-                            class="badge badge-info badge-outline text-[9px] h-auto py-1 w-full justify-start truncate">
-                            {{ spell.name }}
-                        </div>
+                        <app-tooltip [entry]="spell" direction="right">
+                            <div
+                                class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
+                                {{ spell.name }}
+                            </div>
+                        </app-tooltip>
                         } @empty {
-                        <span class="text-[9px] italic opacity-40">No spells known</span>
+                        <span class="text-[10px] italic opacity-40">No spells known</span>
                         }
                     </div>
                 </div>
             </div>
             }
         </div>
+
         <div class="text-[10px] opacity-50 text-right mt-2">
             📍 {{ character().roomCoordinatesKey }}
         </div>

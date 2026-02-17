@@ -2,10 +2,11 @@ import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CharacterModel } from './character.model';
 import { EQUPEMENT_SLOTS } from './character.definitions';
+import { Tooltip } from './tooltip/tooltip';
 
 @Component({
   selector: 'app-character',
-  imports: [CommonModule],
+  imports: [CommonModule, Tooltip],
   templateUrl: './character.html'
 })
 export class Character {

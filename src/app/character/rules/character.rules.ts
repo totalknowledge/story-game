@@ -1,5 +1,7 @@
 import { CharacterModel } from '../character.model';
 import { ItemModel } from '../../item/item.model';
+import { rollDice } from '../../utilities/dice.definitions';
+import { ItemFactory } from '../../item/item.factory';
 
 export function applyBonusCalculation(character: CharacterModel): CharacterModel {
     let toHit = 0;
@@ -119,4 +121,43 @@ function calculatePotentialHealing(character: CharacterModel): number {
     }, 0);
 
     return consumableHealing + spellHealing;
+}
+
+export function equipCharacter(character: CharacterModel, itemFactory: ItemFactory, characterTemplate?: any): void {
+    const items: ItemModel[] = [];
+
+    if (characterTemplate?.equippedItemTemplate) {
+        const naturalWeapon = new ItemModel({
+            ...characterTemplate.equippedItemTemplate,
+            equippableLocation: 'right-hand',
+            isNatural: true
+        });
+        items.push(naturalWeapon);
+    } else {
+        items.push(itemFactory.createRandomItem(['Weapon']));
+    }
+
+    let lootCount = rollDice(1, Math.ceil(character.maxHealth / 10));
+    if (character.classification === 'elite') {
+        lootCount++;
+    } else if (character.classification === 'unique') {
+        lootCount += 2;
+    }
+
+    for (let i = 0; i < lootCount; i++) {
+        if (character.classification === 'unique' && i === 0) {
+            items.push(itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket', 'Scroll', 'SpellBook']));
+        } else if (character.classification === 'elite' && i === 0) {
+            items.push(itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket']));
+        } else {
+            items.push(itemFactory.createRandomItem());
+        }
+    }
+
+    if (items[0]?.typeid === 'weapon-bow-short') {
+        items.push(itemFactory.createItem('ammo-arrows'));
+    }
+
+    applyItemAcquisition(character, items, 100);
+    applyCombatRatingCalculation(character);
 }

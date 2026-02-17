@@ -3,10 +3,11 @@ import { Player } from "../player/player";
 import { Header } from "../header/header";
 import { Enemies } from "../enemies/enemies";
 import { ConsoleComponent } from "../console/console";
+import { Map } from "../map/map"
 
 @Component({
   selector: 'app-main',
-  imports: [Player, Header, Enemies, ConsoleComponent],
+  imports: [Player, Header, Enemies, Map, ConsoleComponent],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })

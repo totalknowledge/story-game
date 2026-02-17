@@ -1,0 +1,35 @@
+.tooltip-host {
+    width: 100%;
+}
+
+.tooltip-panel {
+    transform: scale(0.97);
+}
+
+.group:hover .tooltip-panel {
+    transform: scale(1);
+}
+
+.top-1_2 {
+    top: 50%;
+}
+
+.left-1_2 {
+    left: 50%;
+}
+
+.-translate-y-1_2 {
+    transform: translateY(-50%) scale(0.97);
+}
+
+.group:hover .-translate-y-1_2 {
+    transform: translateY(-50%) scale(1);
+}
+
+.-translate-x-1_2 {
+    transform: translateX(-50%) scale(0.97);
+}
+
+.group:hover .-translate-x-1_2 {
+    transform: translateX(-50%) scale(1);
+}

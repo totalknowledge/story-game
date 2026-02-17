@@ -1,5 +1,5 @@
 import { ItemModel } from "../../item/item.model";
-import { Coordinates, Direction } from "./room.definitions";
+import { Connection, Coordinates, Direction } from "./room.definitions";
 
 export class RoomModel {
     readonly id: string = crypto.randomUUID();
@@ -14,6 +14,7 @@ export class RoomModel {
     items: ItemModel[] = []
     featureTypeids: string[] = [];
     features: any[] = [];
+    externalExits?: Map<Direction, Connection>;
 
     connections: Map<Direction, string | null> = new Map([
         ["north", null], ["south", null], ["east", null],

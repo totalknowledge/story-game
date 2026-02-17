@@ -17,7 +17,6 @@ export class Enemies {
   constructor() {
     for (let i = 0; i < rollDice(1, 3); i++) {
       this.enemies.push(this.characterService.spawnCharacter('enemy'));
-      console.log('images/' + this.enemies[i]().typeid + '.png');
     }
   }
 

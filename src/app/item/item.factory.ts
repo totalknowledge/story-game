@@ -30,7 +30,6 @@ export class ItemFactory {
     if (excludeTypes.length > 0) {
       itemPool = itemPool.filter(t => !excludeTypes.includes(t.type));
     }
-
     if (itemPool.length === 0) {
       return this.createFallbackItem('empty-pool');
     }

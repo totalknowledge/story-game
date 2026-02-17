@@ -8,6 +8,7 @@ export class MapModel {
     type: MapType;
     rooms: Map<string, RoomModel> = new Map();
     startRoomId!: string;
+    exitMapAndRoomId!: string;
     isPersistent: boolean;
 
     constructor(config: { name: string, type: MapType, isPersistent?: boolean; }) {

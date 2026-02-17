@@ -1,213 +1,16 @@
+import { CONSUMABLES } from "./item.definitions.consumables";
+import { WEAPONS } from "./item.definitions.weapons";
+
 export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'legs' | 'feet' | 'neck' | 'none';
 
 export const ITEM_TEMPLATES = [
-    {
-        "typeid": "potion-health-minor",
-        "name": "Minor Health Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 5,
-        "useMessages": [
-            "{user} drinks {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "potion-health",
-        "name": "Health Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 15,
-        "useMessages": [
-            "{user} drinks {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "potion-health-major",
-        "name": "Major Health Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 35,
-        "useMessages": [
-            "{user} drinks {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "potion-mana-minor",
-        "name": "Minor Mana Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "restores": 5,
-        "useMessages": [
-            "{user} drinks {item} and restores {value} mana."
-        ]
-    },
-    {
-        "typeid": "potion-mana",
-        "name": "Mana Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "restores": 15,
-        "useMessages": [
-            "{user} drinks {item} and restores {value} mana."
-        ]
-    },
-    {
-        "typeid": "potion-mana-major",
-        "name": "Major Mana Potion",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "restores": 35,
-        "useMessages": [
-            "{user} drinks {item} and restores {value} mana."
-        ]
-    },
-    {
-        "typeid": "food-bread",
-        "name": "Loaf of Bread",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 4,
-        "useMessages": [
-            "{user} eats {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "food-cheese",
-        "name": "Cheese Wheel",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 4,
-        "useMessages": [
-            "{user} eats {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "food-apple",
-        "name": "Shiny Apple",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 3,
-        "useMessages": [
-            "{user} eats {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "food-meat",
-        "name": "Cooked Meat",
-        "type": "Consumable",
-        "equippableLocation": "none",
-        "heals": 6,
-        "useMessages": [
-            "{user} eats {item} and recovers {value} health."
-        ]
-    },
-    {
-        "typeid": "weapon-dagger-rusty",
-        "name": "Rusty Dagger",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "damage": 4,
-        "resilience": 10,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-big-stick",
-        "name": "Big Stick",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 1,
-        "damage": 4,
-        "resilience": 5,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-sword-iron",
-        "name": "Iron Sword",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 2,
-        "damage": 6,
-        "resilience": 25,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-sword-steel",
-        "name": "Steel Sword",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 1,
-        "damage": 6,
-        "resilience": 35,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-magic-blade",
-        "name": "Magic Blade",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 3,
-        "damage": 11,
-        "resilience": 66,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-axe-battle",
-        "name": "Battle Axe",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 2,
-        "damage": 8,
-        "resilience": 30,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-mace-heavy",
-        "name": "Heavy Mace",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 1,
-        "damage": 7,
-        "resilience": 40,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-spear-long",
-        "name": "Long Spear",
-        "type": "Weapon",
-        "equippableLocation": "right-hand",
-        "plusArmor": 3,
-        "damage": 6,
-        "resilience": 30,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
-    {
-        "typeid": "weapon-bow-short",
-        "name": "Short Bow",
-        "type": "Weapon",
-        "equippableLocation": "left-hand",
-        "plusArmor": 1,
-        "damage": 2,
-        "resilience": 20,
-        "useMessages": [
-            "{user} equips {item}."
-        ]
-    },
+    // Consumables
+    ...CONSUMABLES,
+
+    // Weapons
+    ...WEAPONS,
+
+    // Ammo
     {
         "typeid": "ammo-arrows",
         "name": "Arrow",
@@ -219,6 +22,8 @@ export const ITEM_TEMPLATES = [
             "{user} uses {item} to attack."
         ]
     },
+
+    // Armor
     {
         "typeid": "armor-shield-wooden",
         "name": "Wooden Shield",
@@ -296,11 +101,14 @@ export const ITEM_TEMPLATES = [
             "{user} equips {item}."
         ]
     },
+
+    // Misc
     {
         "typeid": "trinket-ring",
         "name": "Ring",
         "type": "Trinket",
         "equippableLocation": "left-finger",
+        "quality": "fine",
         "useMessages": [
             "It looks so nice."
         ]

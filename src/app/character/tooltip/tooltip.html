@@ -1,0 +1,92 @@
+<div class="tooltip-host group relative inline-flex">
+    <ng-content></ng-content>
+
+    @if (entry) {
+    <div class="tooltip-panel pointer-events-none absolute z-50 rounded bg-neutral p-2 text-xs text-neutral-content opacity-0 shadow-xl transition-all duration-150 group-hover:opacity-100"
+        [class.left-full]="direction === 'right'" [class.right-full]="direction === 'left'"
+        [class.bottom-full]="direction === 'top'" [class.top-full]="direction === 'bottom'"
+        [class.top-1_2]="direction === 'right' || direction === 'left'"
+        [class.-translate-y-1_2]="direction === 'right' || direction === 'left'"
+        [class.left-1_2]="direction === 'top' || direction === 'bottom'"
+        [class.-translate-x-1_2]="direction === 'top' || direction === 'bottom'" [class.ml-2]="direction === 'right'"
+        [class.mr-2]="direction === 'left'" [class.mb-2]="direction === 'top'" [class.mt-2]="direction === 'bottom'"
+        [class]="widthClass">
+        @if (entry) {
+
+        <div class="tooltip-title mb-1 border-b border-neutral-content/20 pb-1 font-bold text-secondary">
+            {{ entry['name'] ?? entry['typeid'] ?? '' }}
+        </div>
+
+        @if (entry['damage']) {
+        <div class="flex justify-between">
+            <span>Damage:</span>
+            <span class="text-error">1d{{ entry['damage'] }}</span>
+        </div>
+        }
+
+        @if (entry['healsUser']) {
+        <div class="flex justify-between">
+            <span>Healing:</span>
+            <span class="text-error">1d{{ entry['healsUser'] }}</span>
+        </div>
+        }
+
+        @if (entry['school']) {
+        <div class="flex justify-between">
+            <span>School:</span>
+            <span class="capatalize">{{ entry['school'] }}</span>
+        </div>
+        }
+
+        @if (entry['manaCost'] !== undefined) {
+        <div class="flex justify-between">
+            <span>Mana:</span>
+            <span class="text-info">{{ entry['manaCost'] }}</span>
+        </div>
+        }
+
+        @if (entry['type']) {
+        <div class="flex justify-between">
+            <span>Type:</span>
+            <span class="capitalize">{{ entry['type'] }}</span>
+        </div>
+        }
+
+        @if (entry['mechanic']) {
+        <div class="flex justify-between">
+            <span>Mechanic:</span>
+            <span class="capitalize">{{ entry['mechanic'] }}</span>
+        </div>
+        }
+
+        @if (entry['power'] !== undefined) {
+        <div class="flex justify-between">
+            <span>Power:</span>
+            <span class="text-accent">{{ entry['power'] }}</span>
+        </div>
+        }
+
+        @if (entry['bonusHealth']) { <div class="text-success">+{{ entry['bonusHealth'] }} Health</div> }
+        @if (entry['bonusMana']) { <div class="text-info">+{{ entry['bonusMana'] }} Mana</div> }
+        @if (entry['plusArmor']) { <div class="text-warning">+{{ entry['plusArmor'] }} Armor</div> }
+        @if (entry['plusHit']) { <div class="text-accent">+{{ entry['plusHit'] }} Hit</div> }
+        @if (entry['plusDamage']) { <div class="text-error">+{{ entry['plusDamage'] }} Bonus Dmg</div> }
+
+        @if (entry['description']) {
+        <div class="mt-1 opacity-90">
+            {{ entry['description'] }}
+        </div>
+        }
+        }
+
+        <div class="tooltip-arrow absolute border-8 border-transparent" [class.right-full]="direction === 'right'"
+            [class.left-full]="direction === 'left'" [class.top-full]="direction === 'top'"
+            [class.bottom-full]="direction === 'bottom'" [class.top-1_2]="direction === 'right' || direction === 'left'"
+            [class.-translate-y-1_2]="direction === 'right' || direction === 'left'"
+            [class.left-1_2]="direction === 'top' || direction === 'bottom'"
+            [class.-translate-x-1_2]="direction === 'top' || direction === 'bottom'"
+            [class.border-r-neutral]="direction === 'right'" [class.border-l-neutral]="direction === 'left'"
+            [class.border-t-neutral]="direction === 'top'" [class.border-b-neutral]="direction === 'bottom'"></div>
+    </div>
+    }
+</div>

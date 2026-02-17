@@ -84,7 +84,6 @@ export class GameEngineService {
   }
 
   searchCorpse(player: CharacterModel, targetName: string): string[] {
-    console.log('it makes it this far')
     const output: string[] = [];
     const playerLocation = player.roomCoordinatesKey;
 
@@ -104,7 +103,6 @@ export class GameEngineService {
     if (targetsToSearch.length === 0) {
       return [`You find no corpses matching "${targetName}".`];
     }
-    console.log(targetsToSearch);
     targetsToSearch.forEach(corpse => {
       output.push(`You search the remains of ${corpse.name}...`);
 

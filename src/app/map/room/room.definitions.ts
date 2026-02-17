@@ -20,6 +20,7 @@ export const REVERSE_DIRECTIONS = {
 export type Connection = {
     name?: string,
     connection: string,
+    loads: string,
     status: string,
     options: Record<string, string>
 }
@@ -259,5 +260,13 @@ export const ROOM_TEMPLATES: Partial<RoomModel>[] = [
     {
         typeid: 'town-empty-shops',
         description: 'Abandoned storefronts with boarded-up windows. Dust motes dance in the slivers of light.',
-    }
+    },
+    {
+        typeid: 'cave-entrance',
+        description: 'The dank dark cave looms in front of you.  There is barely enough light to see.  You hear noises coming from within the depths.',
+    },
+    {
+        typeid: 'cave-001',
+        description: 'Darkness closes around you, you hear the faint trickle of water.',
+    },
 ];

@@ -40,7 +40,7 @@ export class ConsoleService {
       case 'look':
         output = this.engine.lookAround();
         break;
-      case 'north': case 'south': case 'east': case 'west':
+      case 'north': case 'south': case 'east': case 'west': case 'up': case 'down':
         output = this.engine.movePlayer(action);
         break;
       case 'search':

@@ -1,23 +1,24 @@
+import { SpellModel } from "../spell/spell.model";
 import { EquipLocation } from "./item.definitions";
 
 export class ItemModel {
-    id: string;
+    id?: string;
     typeid: string;
     name: string;
     type: string;
-    equippableLocation: EquipLocation;
-    damage: number = 0;
-    plusHit: number = 0;
-    minusToBeHit: number = 0;
-    plusDamage: number = 0;
-    resilience: number | null = null;
-    plusArmor: number = 0;
-    bonusHealth: number = 0;
-    bonusMana: number = 0;
-    heals: number = 0;
-    restores: number = 0;
+    equippableLocation?: EquipLocation;
+    damage?: number = 0;
+    plusHit?: number = 0;
+    minusToBeHit?: number = 0;
+    plusDamage?: number = 0;
+    resilience: number;
+    plusArmor?: number = 0;
+    bonusHealth?: number = 0;
+    bonusMana?: number = 0;
+    heals?: number = 0;
+    restores?: number = 0;
     useMessages: string[] = [];
-    teaches: any[] = [];
+    teaches: string[] = [];
 
     constructor(template: any = {}) {
         this.id = crypto.randomUUID();
@@ -27,7 +28,7 @@ export class ItemModel {
         this.type = template.type;
         this.equippableLocation = template.equippableLocation || "none";
         this.damage = template.damage ?? 0;
-        this.resilience = template.resilience ?? null;
+        this.resilience = template.resilience ?? 999;
         this.bonusHealth = template.bonusHealth ?? 0;
         this.bonusMana = template.bonusMana ?? 0;
         this.heals = template.heals ?? 0;
@@ -42,7 +43,7 @@ export class ItemModel {
     }
 
     isDestroyed(): boolean {
-        return this.resilience !== null && this.resilience <= 0;
+        return this.resilience !== null && this?.resilience <= 0;
     }
 
     damageItem(amount: number): string[] {
@@ -61,6 +62,9 @@ export class ItemModel {
     }
 
     toString(): string {
-        return this.isDestroyed() ? `${this.name} (Broken)` : this.name;
+        if (this.resilience !== null && this.resilience <= 0) {
+            return `Broken ${this.name}`;
+        }
+        return this.name;
     }
 }

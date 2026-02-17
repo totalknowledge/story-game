@@ -1,6 +1,8 @@
 <div class="card w-fit bg-base-200 shadow-xl border-4 transition-all" [ngClass]="{
        'border-primary': isPlayer(),
-       'border-error': !isPlayer() && !character().isDead,
+       'border-error': !isPlayer() && !character().isDead && character().classification === 'normal',
+       'border-neutral': !isPlayer() && !character().isDead && character().classification === 'elite',
+       'border-warning': !isPlayer() && !character().isDead && character().classification === 'unique',
        'opacity-50 grayscale': character().isDead
      }">
 

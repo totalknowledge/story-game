@@ -1,7 +1,11 @@
+import { CharacterClassification } from "./character.definitions";
+
 export class CharacterModel {
     id: string;
     typeid: string;
     name: string;
+    named: boolean = false;
+    classification: CharacterClassification = 'normal';
     baseHealth: number;
     baseMana: number;
     maxHealth: number;

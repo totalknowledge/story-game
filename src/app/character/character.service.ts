@@ -3,7 +3,7 @@ import { CharacterModel } from './character.model';
 import { ItemFactory } from '../item/item.factory';
 import { ItemModel } from '../item/item.model';
 import { NameService } from '../services/name.service';
-import { pickRandom } from '../utilities/dice.definitions';
+import { d100, pickRandom } from '../utilities/dice.definitions';
 import { ENEMY_TEMPLATES } from './character.definitions';
 import { SpellFactory } from '../spell/spell.factory';
 import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation } from './rules/character.rules';
@@ -94,7 +94,27 @@ export class CharacterService {
         ? this.nameService.getHeroName('male').name
         : this.nameService.getEnemyName().name);
     if (type === 'enemy') {
+      const classifyCheck = d100();
+      const classification = classifyCheck <= 1 ? 'unique' : classifyCheck <= 10 ? 'elite' : 'normal';
       characterTemplate = pickRandom(ENEMY_TEMPLATES);
+      if (classification === 'unique') {
+        characterTemplate = {
+          ...characterTemplate,
+          name: characterName,
+          baseHealth: Math.round(characterTemplate.health * 1.2),
+          baseMana: Math.round(characterTemplate.mana * 1.2),
+          named: true,
+          classification
+        };
+      } else if (classification === 'elite') {
+        characterTemplate = {
+          ...characterTemplate,
+          name: `Elite ${characterTemplate.name}`,
+          baseHealth: Math.round(characterTemplate.health * 1.4),
+          baseMana: Math.round(characterTemplate.mana * 1.4),
+          classification
+        };
+      }
     } else {
       characterTemplate = {
         name: characterName, baseHealth: 30,
@@ -126,10 +146,21 @@ export class CharacterService {
       items.push(this.itemFactory.createRandomItem(['Weapon']));
     }
 
-    const lootCount = this.randomInt(0, Math.ceil(character.maxHealth / 10));
+    let lootCount = this.randomInt(0, Math.ceil(character.maxHealth / 10));
+    if (character.classification === 'elite') {
+      lootCount++;
+    } else if (character.classification === 'unique') {
+      lootCount += 2;
+    }
 
     for (let i = 0; i < lootCount; i++) {
-      items.push(this.itemFactory.createRandomItem(['Weapon', 'Armor', 'Consumable']));
+      if (character.classification === 'unique' && i === 0) {
+        items.push(this.itemFactory.createRandomItem(['weapon', 'armor', 'trinket', 'scroll', 'spellbook']));
+      } else if (character.classification === 'elite' && i === 0) {
+        items.push(this.itemFactory.createRandomItem(['weapon', 'armor', 'trinket']));
+      } else {
+        items.push(this.itemFactory.createRandomItem());
+      }
     }
 
     if (items[0]?.typeid === 'weapon-bow-short') {

@@ -6,9 +6,17 @@ export type Coordinates = {
     z: number
 }
 
+export const COORDINATE_OFFSETS: Record<Direction, { x: number; y: number; z: number; }> = {
+    north: { x: 0, y: 1, z: 0 }, south: { x: 0, y: -1, z: 0 },
+    east: { x: 1, y: 0, z: 0 }, west: { x: -1, y: 0, z: 0 },
+    up: { x: 0, y: 0, z: 1 }, down: { x: 0, y: 0, z: -1 }
+};
+
 export type Direction = 'north' | 'south' | 'east' | 'west' | 'up' | 'down';
 
-export const REVERSE_DIRECTIONS = {
+export const DIRECTIONS: Direction[] = ['north', 'south', 'east', 'west', 'up', 'down'];
+
+export const REVERSE_DIRECTIONS: Record<Direction, Direction> = {
     'north': 'south',
     'south': 'north',
     'east': 'west',
@@ -20,9 +28,9 @@ export const REVERSE_DIRECTIONS = {
 export type Connection = {
     name?: string,
     connection: string,
-    loads: string,
-    status: string,
-    options: Record<string, string>
+    loads?: string,
+    status?: string,
+    options?: Record<string, string>
 }
 
 export const ROOM_TEMPLATES: Partial<RoomModel>[] = [

@@ -1,9 +1,10 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { RoomModel } from './room/room.model';
 import { WORLD_MAPS } from './map.definitions';
 import { Connection, ROOM_TEMPLATES } from './room/room.definitions';
 import { Direction } from './room/room.definitions';
 import { MapModel } from './map.model';
+import { MapFactory } from './map.factory';
 
 @Injectable({ providedIn: 'root' })
 export class MapService {
@@ -15,6 +16,7 @@ export class MapService {
   private currentRoomCoords = signal<string>('0,0,0');
   readonly displayMap = computed(() => this.currentMap());
   readonly currentRoom = computed(() => this.rooms()?.get(this.currentRoomCoords()));
+  readonly mapFactory = inject(MapFactory);
 
   constructor() {
     this.loadMap('town');
@@ -65,14 +67,18 @@ export class MapService {
     return ROOM_TEMPLATES.find((template: Partial<RoomModel>) => template.typeid === typeid);
   }
 
-  loadMap(mapName: string): void {
+  loadMap(mapName: string, roomLocation?: string): void {
+    const leavingRoomCoordinates = this.currentRoomCoords();
     const existingMap = this.maps.get(mapName);
+
     if (existingMap) {
       this.currentMap.set(existingMap);
 
-      this.currentRoomCoords.set('0,0,0');
-      const startRoom = existingMap.rooms.get(this.currentRoomCoords());
-      if (startRoom) startRoom.visited = true;
+      const targetCoordinates = roomLocation || '0,0,0';
+      this.currentRoomCoords.set(targetCoordinates);
+
+      const landingRoom = existingMap.rooms.get(targetCoordinates);
+      if (landingRoom) landingRoom.visited = true;
 
       return;
     }
@@ -80,23 +86,20 @@ export class MapService {
     const mapDefinition = WORLD_MAPS[mapName];
     if (!mapDefinition) return;
 
-    const mapModel = new MapModel({ name: mapName, type: mapDefinition['type'] });
-
-    if (mapDefinition['generator'] === 'random') {
-      mapModel.rooms = this.generateRandomMap(mapDefinition);
-    } else {
-      mapModel.rooms = this.generateStaticMap(mapDefinition);
-    }
+    const options = { returnCoordinates: leavingRoomCoordinates };
+    const mapModel = this.mapFactory.generateMap(mapDefinition, options);
 
     this.maps.set(mapName, mapModel);
     this.currentMap.set(mapModel);
 
-    this.currentRoomCoords.set('0,0,0');
-    const startRoom = mapModel.rooms.get(this.currentRoomCoords());
+    const initialCoordinates = roomLocation || '0,0,0';
+    this.currentRoomCoords.set(initialCoordinates);
+
+    const startRoom = mapModel.rooms.get(initialCoordinates);
     if (startRoom) startRoom.visited = true;
   }
 
-  private generateRandomMap(mapDefinition: any): Map<string, RoomModel> {
+  /* private generateRandomMap(mapDefinition: any): Map<string, RoomModel> {
     const moveOffsets: Record<Direction, { x: number; y: number; z: number; }> = {
       north: { x: 0, y: 1, z: 0 }, south: { x: 0, y: -1, z: 0 },
       east: { x: 1, y: 0, z: 0 }, west: { x: -1, y: 0, z: 0 },
@@ -117,10 +120,9 @@ export class MapService {
         const [x, y, z] = coords.split(',').map(Number);
         const room = new RoomModel({ ...template, coordinates: { x, y, z } });
 
-        if (config.mapConnections?.length > 0) {
-          room.externalExits = new Map();
-          config.mapConnections.forEach((exit: Connection) => {
-            room.externalExits?.set(exit.connection as Direction, exit);
+        if (config.mapConnections) {
+          config.mapConnections.forEach((mapConnection: Connection) => {
+            room.connections.set(mapConnection.connection as Direction, mapConnection);
           });
         }
 
@@ -184,9 +186,9 @@ export class MapService {
     }
 
     return roomMap;
-  }
+  } */
 
-  private generateStaticMap(mapDefinition: any): Map<string, RoomModel> {
+  /* private generateStaticMap(mapDefinition: any): Map<string, RoomModel> {
     const mapData = mapDefinition.structure as Record<string, any>;
     const roomMap = new Map<string, RoomModel>();
 
@@ -227,42 +229,30 @@ export class MapService {
     });
 
     return roomMap;
-  }
+  } */
 
   public move(direction: Direction): string[] {
     const activeRoom = this.currentRoom();
     if (!activeRoom) return ["You cannot go that way."];
 
-    const worldExit = activeRoom.externalExits?.get(direction);
+    const targetConnection = activeRoom.connections?.get(direction);
+    if (!targetConnection) return ["You cannot go that way."];
 
-    if (worldExit) {
-      if (worldExit.status === 'locked') return [`The path to ${worldExit.name} is barred.`];
+    if (targetConnection.loads) {
+      if (targetConnection.status === 'locked') return [`The path to ${targetConnection.name} is barred.`];
 
-      const previousMapName = this.currentMap()?.name;
-      const previousRoomCoords = this.currentRoomCoords();
-
-      this.loadMap(worldExit.loads);
-
-      const transitionedMap = this.currentMap();
-      if (transitionedMap && previousMapName) {
-        transitionedMap.exitMapAndRoomId = `${previousMapName}|${previousRoomCoords}`;
-      }
-
-      this.currentRoomCoords.set('0,0,0');
-      const startRoom = this.currentRoom();
-      if (startRoom) startRoom.visited = true;
-
-      return [`You travel to ${worldExit.name}.`];
+      this.loadMap(targetConnection.loads, targetConnection.connection);
+      return [`You travel to ${targetConnection.name}.`];
     }
 
-    const internalTarget = activeRoom.connections.get(direction);
-    if (internalTarget) {
-      this.currentRoomCoords.set(internalTarget);
+    const destinationCoords = targetConnection.connection;
+    if (destinationCoords) {
+      this.currentRoomCoords.set(destinationCoords);
 
       const nextRoom = this.currentRoom();
       if (nextRoom) {
         nextRoom.visited = true;
-        return [nextRoom.description];
+        return [nextRoom.description, ...nextRoom.directions];
       }
     }
 

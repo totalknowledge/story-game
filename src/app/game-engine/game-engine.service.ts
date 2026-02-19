@@ -65,7 +65,7 @@ export class GameEngineService {
         viewLines.push(` - ${enemy.name} is here (${enemy.currentHealth} HP).`);
       });
     }
-    viewLines.push(...currentRoom.getDirections());
+    viewLines.push(...currentRoom.directions);
 
     return viewLines;
   }

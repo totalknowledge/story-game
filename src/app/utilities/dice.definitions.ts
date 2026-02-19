@@ -13,3 +13,10 @@ export const randomInt = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
 export const pickRandom = (list: any[]) => list[randomInt(0, list.length - 1)];
+
+export const shuffleInPlace = (entries: any[]): void => {
+    entries.forEach((currentEntry, currentIndex) => {
+        const swapIndex = randomInt(0, entries.length - 1);
+        [entries[currentIndex], entries[swapIndex]] = [entries[swapIndex], currentEntry];
+    });
+};

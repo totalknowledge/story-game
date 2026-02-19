@@ -1,6 +1,5 @@
+import { MapType } from "./map.definitions";
 import { RoomModel } from "./room/room.model";
-
-export type MapType = 'town' | 'dungeon' | 'wilderness' | 'interior';
 
 export class MapModel {
     readonly id: string = crypto.randomUUID();
@@ -8,7 +7,6 @@ export class MapModel {
     type: MapType;
     rooms: Map<string, RoomModel> = new Map();
     startRoomId!: string;
-    exitMapAndRoomId!: string;
     isPersistent: boolean;
 
     constructor(config: { name: string, type: MapType, isPersistent?: boolean; }) {

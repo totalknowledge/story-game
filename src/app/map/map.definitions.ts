@@ -1,8 +1,18 @@
+import { Connection, Direction } from "./room/room.definitions";
+
+export type MapType = 'town' | 'dungeon' | 'wilderness' | 'interior';
+
 export type MapDefinition = Record<string, any>;
+export type RoomDefinition = {
+    room: string,
+    connections: Direction[],
+    mapConnections: Connection[]
+}
 
 export const WORLD_MAPS: Record<string, MapDefinition> = {
     'caves-01': {
         type: 'dungeon',
+        name: 'The Caves',
         generator: 'random',
         features: 1,
         featureTypes: [],
@@ -14,7 +24,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             'enemy-cave-spider',
             'enemy-wild-wolf'
         ],
-        rooms: 5,
+        rooms: 10,
         randomRooms: [
             'cave-001'
         ],
@@ -23,7 +33,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
                 room: 'cave-entrance',
                 commections: ['west'],
                 mapConnections: [
-                    { connection: 'west', name: 'Althea', loads: 'town', status: 'unlocked' }
+                    { direction: 'west', connection: '', name: 'Althea', loads: 'town', status: 'unlocked' }
                 ]
             }
         }
@@ -47,7 +57,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
                 room: 'town-ew-road',
                 connections: ['east', 'west'],
                 mapConnections: [
-                    { connection: 'east', name: 'The Caves', loads: 'caves-01', status: 'unlocked' }
+                    { direction: 'east', connection: '0,0,0', name: 'The Caves', loads: 'caves-01', status: 'unlocked' }
                 ]
             },
             '1,1,0': {

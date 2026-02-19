@@ -1,12 +1,8 @@
 import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { CharacterModel } from './character.model';
-import { ItemFactory } from '../item/item.factory';
 import { ItemModel } from '../item/item.model';
-import { NameService } from '../services/name.service';
-import { d100, pickRandom } from '../utilities/dice.definitions';
-import { ENEMY_TEMPLATES } from './character.definitions';
-import { SpellFactory } from '../spell/spell.factory';
-import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation, equipCharacter } from './rules/character.rules';
+import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation } from './rules/character.rules';
+import { CharacterFactory } from './character.factory';
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +10,7 @@ import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculati
 export class CharacterService {
   private characterRegistry: Map<string, CharacterModel> = new Map();
   private charactersInRoom: WritableSignal<Map<string, CharacterModel>> = signal(new Map());
-  private itemFactory = inject(ItemFactory);
-  private spellFactory = inject(SpellFactory);
-  private nameService = inject(NameService);
+  private characterFactory = inject(CharacterFactory);
   playerCharacterId?: string;
   private readonly MAX_BACKPACK_SIZE = 10;
 
@@ -71,77 +65,9 @@ export class CharacterService {
     return results;
   }
 
-  public seedSpells(character: CharacterModel, characterTemplate?: any): void {
-    if (!character) return;
-
-    const minimumSpellCount = Math.ceil((character.baseMana || 0) / 10);
-    const existingSpellIds = new Set(character.spells.map(spell => spell.typeid));
-
-    if (characterTemplate?.spellTypeids && Array.isArray(characterTemplate.spellTypeids)) {
-      characterTemplate.spellTypeids.forEach((spellId: string) => {
-        if (!existingSpellIds.has(spellId)) {
-          character.spells.push(this.spellFactory.createSpell(spellId));
-          existingSpellIds.add(spellId);
-        }
-      });
-    }
-
-    while (character.spells.length < minimumSpellCount) {
-      const randomSpell = this.spellFactory.getRandomSpell(Math.round(character.baseMana / 3));
-      if (!existingSpellIds.has(randomSpell.typeid)) {
-        character.spells.push(randomSpell);
-        existingSpellIds.add(randomSpell.typeid);
-      }
-    }
-
-    this.charactersInRoom.update(currentRegistry =>
-      new Map(currentRegistry).set(character.id, character)
-    );
-  }
-
   spawnCharacter(type = 'enemy', name?: string): Signal<CharacterModel> {
-    let characterTemplate: any;
-    const characterName =
-      name ??
-      (type === 'player'
-        ? this.nameService.getHeroName('male').name
-        : this.nameService.getEnemyName().name);
-    if (type === 'enemy') {
-      const classifyCheck = d100();
-      const classification = classifyCheck <= 1 ? 'unique' : classifyCheck <= 10 ? 'elite' : 'normal';
-      characterTemplate = pickRandom(ENEMY_TEMPLATES);
-      if (classification === 'unique') {
-        characterTemplate = {
-          ...characterTemplate,
-          name: characterName,
-          baseHealth: Math.round(characterTemplate.health * 1.2),
-          baseMana: Math.round(characterTemplate.mana * 1.2),
-          named: true,
-          classification
-        };
-      } else if (classification === 'elite') {
-        characterTemplate = {
-          ...characterTemplate,
-          name: `Elite ${characterTemplate.name}`,
-          baseHealth: Math.round(characterTemplate.health * 1.4),
-          baseMana: Math.round(characterTemplate.mana * 1.4),
-          classification
-        };
-      }
-    } else {
-      characterTemplate = {
-        name: characterName, baseHealth: 30,
-        baseMana: 50, typeid: 'player'
-      } as any;
-    }
-    const character = new CharacterModel(
-      characterTemplate.name, characterTemplate.health,
-      characterTemplate.mana, characterTemplate);
-    this.seedSpells(character, characterTemplate);
-    console.log(characterTemplate);
+    const character = this.characterFactory.createCharacter(type, name);
     this.registerCharacter(character, type === 'player');
-    equipCharacter(character, this.itemFactory, characterTemplate);
-    console.log(character)
     return computed(() => character);
   }
 

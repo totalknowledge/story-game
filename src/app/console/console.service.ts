@@ -1,11 +1,13 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { GameEngineService } from '../game-engine/game-engine.service';
 import { CharacterService } from '../character/character.service';
+import { EnemyDecision } from '../enemies/enemy.decision';
 
 @Injectable({ providedIn: 'root' })
 export class ConsoleService {
   private engine = inject(GameEngineService);
   private characterService = inject(CharacterService);
+  private enemyDecision = inject(EnemyDecision);
   readonly messages = signal<string[]>(['Welcome, adventurer.  This is Althea... a beautiful place plagued with monsters.']);
 
   log(message: string): void {
@@ -30,9 +32,14 @@ export class ConsoleService {
         break;
       case 'attack':
         output = this.handleAttack(targetName);
+        output.push(...this.enemyDecision.processEnemyTurns());
         break;
       case 'cast':
         this.handleCast(targetName);
+        output.push(...this.enemyDecision.processEnemyTurns());
+        break;
+      case 'drop':
+        output = this.handleDrop(targetName);
         break;
       case 'equip':
         output = this.handleEquip(targetName);
@@ -43,8 +50,15 @@ export class ConsoleService {
       case 'north': case 'south': case 'east': case 'west': case 'up': case 'down':
         output = this.engine.movePlayer(action);
         break;
+      case 'place':
+        output = this.handlePlace(targetName);
+        break;
       case 'search':
         output = this.handleSearch(targetName);
+        output.push(...this.enemyDecision.processEnemyTurns());
+        break;
+      case 'take':
+        output = this.handleTake(targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
@@ -117,6 +131,22 @@ export class ConsoleService {
     combatResults.forEach(line => this.log(line));
   }
 
+  private handleDrop(itemName: string): string[] {
+    const player = this.characterService.getPlayer()();
+    if (!player || player.isDead) return ['You are dead and cannot drop items.'];
+    if (!itemName) return ['Drop what?'];
+
+    const itemToDrop = player.items.find(inventoryItem =>
+      inventoryItem.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+
+    if (!itemToDrop) {
+      return [`You are not carrying a "${itemName}".`];
+    }
+
+    return this.engine.drop(player, itemToDrop);
+  }
+
   private handleEquip(itemName: string): string[] {
     const player = this.characterService.getPlayer()();
     if (!player || player.isDead) return ['You are dead and cannot change equipment.'];
@@ -133,10 +163,30 @@ export class ConsoleService {
     return this.characterService.equipItem(player.id, itemToEquip);
   }
 
+  private handlePlace(input: string): string[] {
+    const player = this.characterService.getPlayer()();
+    if (!player || player.isDead) return ['You are dead and cannot place items.'];
+    if (!input) return ['Place what?'];
+
+    const parts = input.split(' in ');
+    const itemName = parts[0];
+    const featureName = parts[1];
+
+    return this.engine.place(player, itemName, featureName);
+  }
+
   handleSearch(targetName: string): string[] {
     const player = this.characterService.getPlayer()();
     if (!player || player.isDead) return ['You cannot search while dead.'];
 
     return this.engine.searchCorpse(player, targetName);
+  }
+
+  private handleTake(itemName: string): string[] {
+    const player = this.characterService.getPlayer()();
+    if (!player || player.isDead) return ['You are dead and cannot take items.'];
+    if (!itemName) return ['Take what?'];
+
+    return this.engine.take(player, itemName);
   }
 }

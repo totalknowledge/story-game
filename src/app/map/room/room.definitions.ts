@@ -249,7 +249,7 @@ export const ROOM_TEMPLATES: Partial<RoomModel>[] = [
     {
         typeid: 'town-bank',
         description: 'A heavily fortified building with thick iron bars over the windows. The air smells of old parchment and cold copper.',
-        featureTypeids: ['feature-vault']
+        featureTypeids: ['feature-bank-vault']
     },
     {
         typeid: 'town-ew-shops',

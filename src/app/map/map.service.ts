@@ -1,7 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { RoomModel } from './room/room.model';
 import { WORLD_MAPS } from './map.definitions';
-import { Connection, ROOM_TEMPLATES } from './room/room.definitions';
 import { Direction } from './room/room.definitions';
 import { MapModel } from './map.model';
 import { MapFactory } from './map.factory';
@@ -25,11 +23,12 @@ export class MapService {
   public activeFloorGrid() {
     return computed(() => {
       const roomMap = this.rooms();
-      const currentCoords = this.currentRoomCoords();
-      const [playerX, playerY, playerZ] = currentCoords.split(',').map(Number);
+      const currentRoom = this.currentRoom();
+      const currentCoords = currentRoom?.coordinates;
+      const currentCoordinateKey = currentRoom?.coordinateKey;
 
       const floorRooms = Array.from(roomMap?.values() || [])
-        .filter(room => room.coordinates?.z === playerZ);
+        .filter(room => room.coordinates?.z === currentCoords?.z);
 
       if (floorRooms.length === 0) return null;
 
@@ -43,12 +42,12 @@ export class MapService {
       for (let y = maxY; y >= minY; y--) {
         const row = [];
         for (let x = minX; x <= maxX; x++) {
-          const key = `${x},${y},${playerZ}`;
+          const key = `${x},${y},${currentCoords?.z}`;
           const room = roomMap?.get(key);
 
           row.push({
             room,
-            isPlayer: key === currentCoords,
+            isPlayer: key === currentCoordinateKey,
             visible: room?.visited ?? false
           });
         }
@@ -57,14 +56,10 @@ export class MapService {
 
       return {
         grid,
-        level: playerZ,
+        level: currentCoords?.z,
         dimensions: { width: maxX - minX + 1, height: maxY - minY + 1 }
       };
     });
-  }
-
-  private findTemplate(typeid: string) {
-    return ROOM_TEMPLATES.find((template: Partial<RoomModel>) => template.typeid === typeid);
   }
 
   loadMap(mapName: string, roomLocation?: string): void {
@@ -99,138 +94,6 @@ export class MapService {
     if (startRoom) startRoom.visited = true;
   }
 
-  /* private generateRandomMap(mapDefinition: any): Map<string, RoomModel> {
-    const moveOffsets: Record<Direction, { x: number; y: number; z: number; }> = {
-      north: { x: 0, y: 1, z: 0 }, south: { x: 0, y: -1, z: 0 },
-      east: { x: 1, y: 0, z: 0 }, west: { x: -1, y: 0, z: 0 },
-      up: { x: 0, y: 0, z: 1 }, down: { x: 0, y: 0, z: -1 }
-    };
-
-    const reverseDirections: Record<Direction, Direction> = {
-      north: 'south', south: 'north', east: 'west', west: 'east', up: 'down', down: 'up'
-    };
-
-    const predefinedStructure = (mapDefinition.structure ?? {}) as Record<string, any>;
-    const roomMap = new Map<string, RoomModel>();
-    const randomTemplates = mapDefinition.randomRooms ?? [];
-
-    Object.entries(predefinedStructure).forEach(([coords, config]) => {
-      const template = this.findTemplate(config.room);
-      if (template) {
-        const [x, y, z] = coords.split(',').map(Number);
-        const room = new RoomModel({ ...template, coordinates: { x, y, z } });
-
-        if (config.mapConnections) {
-          config.mapConnections.forEach((mapConnection: Connection) => {
-            room.connections.set(mapConnection.connection as Direction, mapConnection);
-          });
-        }
-
-        roomMap.set(coords, room);
-      }
-    });
-
-    const activeFrontier = Array.from(roomMap.keys());
-    let placedRoomsCount = roomMap.size;
-    const targetRoomCount = Math.max(placedRoomsCount, Number(mapDefinition.rooms ?? 0));
-
-    while (activeFrontier.length > 0 && placedRoomsCount < targetRoomCount) {
-      const currentCoords = activeFrontier.shift()!;
-      const currentRoom = roomMap.get(currentCoords)!;
-
-      const reservedByConfig = new Set(
-        predefinedStructure[currentCoords]?.mapConnections?.map((c: any) => c.connection) ?? []
-      );
-
-      const availableDirections = (Object.keys(moveOffsets) as Direction[]).sort(() => Math.random() - 0.5);
-
-      for (const dir of availableDirections) {
-        if (placedRoomsCount >= targetRoomCount || reservedByConfig.has(dir)) continue;
-
-        const offset = moveOffsets[dir];
-        const pos = currentRoom.coordinates!;
-        const neighborCoords = `${pos.x + offset.x},${pos.y + offset.y},${pos.z + offset.z}`;
-        const oppositeDir = reverseDirections[dir];
-
-        if (roomMap.has(neighborCoords)) {
-          const neighbor = roomMap.get(neighborCoords)!;
-          const neighborReserved = new Set(
-            predefinedStructure[neighborCoords]?.mapConnections?.map((c: any) => c.connection) ?? []
-          );
-
-          if (!neighborReserved.has(oppositeDir)) {
-            currentRoom.connections.set(dir, neighborCoords);
-            neighbor.connections.set(oppositeDir, currentCoords);
-          }
-          continue;
-        }
-
-        const randomTypeid = randomTemplates[Math.floor(Math.random() * randomTemplates.length)];
-        const newTemplate = this.findTemplate(randomTypeid);
-        if (!newTemplate) continue;
-
-        const [nx, ny, nz] = neighborCoords.split(',').map(Number);
-        const newRoom = new RoomModel({ ...newTemplate, coordinates: { x: nx, y: ny, z: nz } });
-
-        roomMap.set(neighborCoords, newRoom);
-        currentRoom.connections.set(dir, neighborCoords);
-        newRoom.connections.set(oppositeDir, currentCoords);
-
-        activeFrontier.push(neighborCoords);
-        placedRoomsCount++;
-      }
-
-      if (placedRoomsCount < targetRoomCount && activeFrontier.length === 0) {
-        activeFrontier.push(...Array.from(roomMap.keys()).sort(() => Math.random() - 0.5));
-      }
-    }
-
-    return roomMap;
-  } */
-
-  /* private generateStaticMap(mapDefinition: any): Map<string, RoomModel> {
-    const mapData = mapDefinition.structure as Record<string, any>;
-    const roomMap = new Map<string, RoomModel>();
-
-    Object.entries(mapData).forEach(([coords, config]) => {
-      const template = this.findTemplate(config.room);
-      const [x, y, z] = coords.split(',').map(Number);
-
-      if (template) {
-        const room = new RoomModel({
-          ...template,
-          coordinates: { x, y, z }
-        });
-
-        if (config.mapConnections?.length > 0) {
-          room.externalExits = new Map();
-          config.mapConnections.forEach((exit: Connection) => {
-            room.externalExits?.set(exit.connection as Direction, exit);
-          });
-        }
-
-        roomMap.set(coords, room);
-      }
-    });
-
-    roomMap.forEach((room, coords) => {
-      const config = mapData[coords];
-      (config.connections ?? []).forEach((direction: Direction) => {
-        const neighborKey = this.calculateNeighborKey(
-          room.coordinates!.x,
-          room.coordinates!.y,
-          room.coordinates!.z,
-          direction
-        );
-        if (roomMap.has(neighborKey)) {
-          room.connections.set(direction, neighborKey);
-        }
-      });
-    });
-
-    return roomMap;
-  } */
-
   public move(direction: Direction): string[] {
     const activeRoom = this.currentRoom();
     if (!activeRoom) return ["You cannot go that way."];
@@ -257,15 +120,5 @@ export class MapService {
     }
 
     return ["You cannot go that way."];
-  }
-
-  private calculateNeighborKey(x: number, y: number, z: number, direction: Direction): string {
-    const movement = {
-      north: [0, 1, 0], south: [0, -1, 0],
-      east: [1, 0, 0], west: [-1, 0, 0],
-      up: [0, 0, 1], down: [0, 0, -1]
-    }[direction] || [0, 0, 0];
-
-    return `${x + movement[0]},${y + movement[1]},${z + movement[2]}`;
   }
 }

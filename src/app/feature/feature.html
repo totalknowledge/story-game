@@ -1,0 +1,23 @@
+<!-- feature.component.html -->
+<div class="card bg-base-200 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">{{ feature().name }}</h2>
+        <p class="text-sm">{{ feature().description }}</p>
+
+        @if (feature().items.length > 0) {
+        <div class="divider">Items</div>
+        <div class="space-y-2">
+            @for (item of feature().items; track item.id) {
+            <div class="flex justify-between items-center bg-base-300 p-2 rounded">
+                <span>{{ item.name }}</span>
+                @if (feature().type === 'store' && item) {
+                <span class="badge badge-primary">1g</span>
+                }
+            </div>
+            }
+        </div>
+        } @else {
+        <p class="text-sm text-base-content/60">Empty</p>
+        }
+    </div>
+</div>

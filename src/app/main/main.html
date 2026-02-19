@@ -23,7 +23,11 @@
         <div class="flex-none w-auto max-h-full pr-2 overflow-visible">
             <div class="max-h-full overflow-y-auto custom-scrollbar overflow-x-visible">
                 <div class="flex flex-col gap-4 overflow-visible">
+                    @if (activeFeature()) {
+                    <app-feature [feature]="activeFeature()!"></app-feature>
+                    } @else {
                     <app-enemies></app-enemies>
+                    }
                 </div>
             </div>
         </div>

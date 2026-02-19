@@ -5,6 +5,8 @@ import { CharacterService } from '../character/character.service';
 import { MapService } from '../map/map.service';
 import { Direction } from '../map/room/room.definitions';
 import { ItemFactory } from '../item/item.factory';
+import { d100, rollDice } from '../utilities/dice.definitions';
+import { FeatureFactory } from '../feature/feature.factory';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +17,7 @@ export class GameEngineService {
   private characterService = inject(CharacterService);
   private mapService = inject(MapService);
   private itemFactory = inject(ItemFactory);
+  private featureFactory = inject(FeatureFactory);
 
   attack(attacker: CharacterModel, defender: CharacterModel): string[] {
     const combatLog: string[] = [];
@@ -67,6 +70,14 @@ export class GameEngineService {
         viewLines.push(` - ${enemy.name} is here (${enemy.currentHealth} HP).`);
       });
     }
+
+    if (currentRoom.items.length > 0) {
+      viewLines.push("Items:");
+      currentRoom.items.forEach(item => {
+        viewLines.push(` - ${item.name}`);
+      });
+    }
+
     viewLines.push(...currentRoom.directions);
 
     return viewLines;
@@ -75,47 +86,167 @@ export class GameEngineService {
   movePlayer(command: string): string[] {
     const moveDirection = command as Direction;
     const departingRoom = this.mapService.currentRoom();
+    const player = this.characterService.getPlayer()();
+
+    if (!player) return ['Cannot move - player not found.'];
 
     if (departingRoom) {
-      const activeOccupants = this.characterService.getCharactersInRoom();
-      departingRoom.enemyIds = activeOccupants
-        .filter(character => character.id !== this.characterService.playerCharacterId)
-        .map(enemy => {
-          this.characterService.updateCharacter(enemy);
-          return enemy.id;
-        });
+      this.saveRoomState(departingRoom);
     }
 
     const movementNarrative = this.mapService.move(moveDirection);
+    movementNarrative.push(...this.rest(player));
     const destinationRoom = this.mapService.currentRoom();
 
     if (destinationRoom?.coordinates) {
-      const player = this.characterService.getPlayer()();
-      (this.characterService as any).charactersInRoom.set(new Map());
-
-      if (player) {
-        this.characterService.registerCharacter(player, true);
-      }
-
-      this.characterService.movePlayer(destinationRoom.coordinates);
-
-      if (destinationRoom.enemyIds.length > 0) {
-        destinationRoom.enemyIds.forEach(characterId => {
-          const cachedCharacter = (this.characterService as any).characterRegistry.get(characterId);
-          if (cachedCharacter) {
-            this.characterService.registerCharacter(cachedCharacter);
-          }
-        });
-      }
-      else if (destinationRoom.enemyTypeids.length > 0) {
-        destinationRoom.enemyTypeids.forEach(typeId => {
-          const newEnemySignal = this.characterService.spawnCharacter('enemy', typeId);
-          destinationRoom.enemyIds.push(newEnemySignal().id);
-        });
-      }
+      this.loadRoomState(destinationRoom, player);
     }
 
     return movementNarrative;
+  }
+
+  private saveRoomState(room: any): void {
+    const occupants = this.characterService.getCharactersInRoom();
+    room.enemyIds = occupants
+      .filter(character => character.id !== this.characterService.playerCharacterId)
+      .map(enemy => enemy.id);
+  }
+
+  private loadRoomState(room: any, player: CharacterModel): void {
+    (this.characterService as any).charactersInRoom.set(new Map());
+    this.characterService.registerCharacter(player, true);
+    player.roomCoordinatesKey = `${room.coordinates.x},${room.coordinates.y},${room.coordinates.z}`;
+
+    if (room.enemyIds.length > 0) {
+      this.loadExistingEnemies(room);
+    } else if (room.enemyTypeids.length > 0) {
+      this.spawnNewEnemies(room);
+    }
+
+    if (room.featureTypeids && room.featureTypeids.length > 0 && room.features.length === 0) {
+      room.featureTypeids.forEach((typeid: string) => {
+        const feature = this.featureFactory.createFeature(typeid);
+        room.features.push(feature);
+      });
+    }
+
+    if (room.itemTypeids && room.itemTypeids.length > 0 && room.items.length === 0) {
+      room.itemTypeids.forEach((typeid: string) => {
+        const item = this.itemFactory.createItem(typeid);
+        room.items.push(item);
+      });
+    }
+  }
+
+  private loadExistingEnemies(room: any): void {
+    room.enemyIds.forEach((characterId: string) => {
+      const cachedCharacter = (this.characterService as any).characterRegistry.get(characterId);
+      if (cachedCharacter) {
+        this.characterService.registerCharacter(cachedCharacter);
+      }
+    });
+  }
+
+  private spawnNewEnemies(room: any): void {
+    room.enemyTypeids.forEach((typeId: string) => {
+      const newEnemy = this.characterService.spawnCharacter(typeId)();
+      room.enemyIds.push(newEnemy.id);
+    });
+  }
+
+  // game-engine.service.ts - add these methods
+
+  take(player: CharacterModel, itemName: string): string[] {
+    const room = this.mapService.currentRoom();
+    if (!room) return ['You cannot take items here.'];
+
+    const roomItems = [...room.items];
+    const featureItems = room.features
+      .filter((f: any) => f.interactable && f.items)
+      .flatMap((f: any) => f.items.map((item: any) => ({ item, feature: f })));
+
+    const allAvailableItems = [
+      ...roomItems.map(item => ({ item, source: 'room' })),
+      ...featureItems.map(({ item, feature }) => ({ item, source: feature }))
+    ];
+
+    const targetItem = allAvailableItems.find(({ item }) =>
+      item.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+
+    if (!targetItem) {
+      return [`There is no "${itemName}" here to take.`];
+    }
+
+    const acquired = this.characterService.acquireItem(player.id, [targetItem.item]);
+
+    if (!acquired) {
+      return [`Your inventory is full.`];
+    }
+
+    if (targetItem.source === 'room') {
+      room.items = room.items.filter(i => i.id !== targetItem.item.id);
+    } else {
+      targetItem.source.items = targetItem.source.items.filter((i: any) => i.id !== targetItem.item.id);
+    }
+
+    return [`You took ${targetItem.item.name}.`];
+  }
+
+  place(player: CharacterModel, itemName: string, featureName?: string): string[] {
+    const room = this.mapService.currentRoom();
+    if (!room) return ['You cannot place items here.'];
+
+    const openFeatures = room.features.filter((f: any) =>
+      f.interactable && f.items && (!f.itemSlots || f.items.length < f.itemSlots)
+    );
+
+    if (openFeatures.length === 0) {
+      return ['There is nowhere to place items here.'];
+    }
+
+    let targetFeature = openFeatures[0];
+    if (featureName) {
+      const found = openFeatures.find((f: any) =>
+        f.name.toLowerCase().includes(featureName.toLowerCase())
+      );
+      if (!found) {
+        return [`There is no "${featureName}" here to place items in.`];
+      }
+      targetFeature = found;
+    }
+
+    const equippedItem = Array.from(player.equipment.values()).find((item: any) =>
+      item.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+
+    const inventoryItem = player.items.find(item =>
+      item.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+
+    const itemToPlace = equippedItem || inventoryItem;
+
+    if (!itemToPlace) {
+      return [`You are not carrying a "${itemName}".`];
+    }
+
+    if (targetFeature.itemSlots && targetFeature.items.length >= targetFeature.itemSlots) {
+      return [`The ${targetFeature.name} is full.`];
+    }
+
+    if (equippedItem) {
+      const slot = Array.from(player.equipment.entries()).find(([_, item]) => item.id === equippedItem.id)?.[0];
+      if (slot) {
+        player.equipment.delete(slot);
+      }
+    } else {
+      player.items = player.items.filter(i => i.id !== itemToPlace.id);
+    }
+
+    targetFeature.items.push(itemToPlace);
+    this.characterService.updateCharacter(player);
+
+    return [`You placed ${itemToPlace.name} in the ${targetFeature.name}.`];
   }
 
   searchCorpse(player: CharacterModel, targetName: string): string[] {
@@ -125,7 +256,6 @@ export class GameEngineService {
     const allCharacters = this.characterService.getCharactersInRoom();
 
     const corpses = allCharacters.filter(character =>
-      character.roomCoordinatesKey === playerLocation &&
       character.isDead &&
       character.id !== player.id
     );
@@ -195,12 +325,15 @@ export class GameEngineService {
   }
 
   private calculateDamage(attacker: CharacterModel, weapon: ItemModel | undefined, isCritical: boolean): number {
-    const damageDie = weapon?.damage || 2;
-    const rollResult = Math.floor(Math.random() * damageDie) + 1;
+    const damageDie = weapon ? weapon?.damage || 2 : 1;
+    const rollResult = rollDice(1, damageDie);
+    console.log('damageRoll: ' + rollResult + ' on a 1d' + damageDie +
+      " plus to damage is: " + attacker.toDamage
+    );
     const baseDamage = rollResult + attacker.toDamage;
 
-    const criticalMultiplier = isCritical ? 2 : 1;
-    return Math.max(1, baseDamage * criticalMultiplier);
+    const criticalMultiplier = isCritical ? 1.5 : 1;
+    return Math.max(1, Math.round(baseDamage * criticalMultiplier));
   }
 
   cast(caster: CharacterModel, spell: any, target?: CharacterModel): string[] {
@@ -244,6 +377,17 @@ export class GameEngineService {
     return combatLog;
   }
 
+  drop(player: CharacterModel, item: ItemModel): string[] {
+    const currentRoom = this.mapService.currentRoom();
+    if (!currentRoom) return ['You cannot drop items here.'];
+
+    currentRoom.items.push(item);
+    player.items = player.items.filter(currentItem => currentItem !== item);
+    this.characterService.updateCharacter(player);
+
+    return [`You dropped ${item.name}.`];
+  }
+
   private determineSpellTargets(caster: CharacterModel, spell: any, target?: CharacterModel): CharacterModel[] {
     const enemies = this.characterService.getActiveEnemies();
 
@@ -265,13 +409,33 @@ export class GameEngineService {
     return [];
   }
 
+  rest(player: CharacterModel): string[] {
+    const messages: string[] = [];
+
+    if (player.damage > 0) {
+      player.damage = Math.max(0, player.damage - 1);
+      messages.push('You rest and recover 1 health.');
+    }
+
+    if (player.usedMana > 0) {
+      player.usedMana = Math.max(0, player.usedMana - 1);
+      messages.push('You rest and recover 1 mana.');
+    }
+
+    if (messages.length > 0) {
+      this.characterService.updateCharacter(player);
+    }
+
+    return messages;
+  }
+
   private resolveSpellEffect(caster: CharacterModel, defender: CharacterModel, spell: any, isHalfDamage: boolean): string[] {
     const log: string[] = [];
     const spellToHit = Math.round(caster.maxMana / 10);
-    const spellBonusDamage = Math.round(caster.maxMana / 10);
+    const spellBonusDamage = Math.round(caster.maxMana / 2);
     const targetSpellArmor = Math.round(defender.maxMana / 2);
 
-    const rawRoll = Math.floor(Math.random() * 100) + 1;
+    const rawRoll = d100();
     const modifiedRoll = rawRoll + spellToHit - targetSpellArmor;
 
     if (this.isMiss(rawRoll, modifiedRoll)) {
@@ -280,9 +444,9 @@ export class GameEngineService {
     }
 
     const isCritical = this.isCrit(rawRoll, modifiedRoll);
-    let spellPower = Math.floor(Math.random() * (spell.damage || 1)) + 1 + spellBonusDamage;
+    let spellPower = rollDice(1, spell.damage) + spellBonusDamage;
 
-    if (isCritical) spellPower *= 2;
+    if (isCritical) spellPower *= 1.5;
     if (isHalfDamage) spellPower = Math.floor(spellPower / 2);
 
     defender.damage += spellPower;

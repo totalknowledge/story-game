@@ -14,8 +14,8 @@ export class Enemies {
   public enemies = this.characterService.enemiesInRoom();
 
   constructor() {
-    for (let i = 0; i < rollDice(1, 3); i++) {
-      this.characterService.spawnCharacter('enemy');
+    for (let i = 1; i < rollDice(1, 3); i++) {
+      this.characterService.spawnCharacter('enemy-humanoid-bandit');
     }
   }
 }

@@ -18,7 +18,6 @@ export class RoomFactory {
     this.populateRoomItemTypeids(room, roomTemplate.itemTypeids || []);
     this.populateRoomEnemyTypeids(room, roomTemplate.enemyTypeids || []);
     this.populateRoomFeatureTypeids(room, roomTemplate.featureTypeids || []);
-    console.log(`Generated room: ${room.typeid} with items: ${room.itemTypeids}, enemies: ${room.enemyTypeids}, features: ${room.featureTypeids}`);
     return room;
   }
 

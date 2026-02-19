@@ -21,8 +21,8 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             'enemy-rat',
             'enemy-bat',
             'enemy-slime-green',
-            'enemy-cave-spider',
-            'enemy-wild-wolf'
+            'enemy-spider-small',
+            'enemy-wolf'
         ],
         rooms: 10,
         randomRooms: [

@@ -34,6 +34,19 @@ export class CharacterService {
     return acquired;
   }
 
+  enemiesInRoom(): Signal<CharacterModel[]> {
+    return computed(() => {
+      return Array.from(this.charactersInRoom().values())
+        .filter(occupant => occupant.id !== this.playerCharacterId)
+        .sort((enemyAlpha, enemyBeta) => {
+          if (enemyAlpha.isDead !== enemyBeta.isDead) {
+            return enemyAlpha.isDead ? 1 : -1;
+          }
+          return enemyAlpha.currentHealth - enemyBeta.currentHealth;
+        });
+    });
+  }
+
   equipItem(characterId: string, item: ItemModel): string[] {
     const character = this.charactersInRoom().get(characterId);
     if (!character) return ['Character not found.'];

@@ -4,7 +4,7 @@ import { MapModel } from './map.model';
 import { RoomModel } from './room/room.model';
 import { RoomFactory } from './room/room.factory';
 import { Direction, ROOM_TEMPLATES, Connection, COORDINATE_OFFSETS, REVERSE_DIRECTIONS, DIRECTIONS, Coordinates } from './room/room.definitions';
-import { shuffleInPlace } from '../utilities/dice.definitions';
+import { pickRandom, rollDice, shuffleInPlace } from '../utilities/dice.definitions';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +28,20 @@ export class MapFactory {
     return map;
   }
 
+  private generateEnemyTypeIds(mapDefinition: MapDefinition): string[] {
+    const enemyPool = mapDefinition['enemyTypes'] || [];
+    if (enemyPool.length === 0) return [];
+
+    const spawnCount = Math.max(0, rollDice(1, 5) - 2);
+    const selectedTypes: string[] = [];
+
+    for (let i = 0; i < spawnCount; i++) {
+      selectedTypes.push(pickRandom(enemyPool));
+    }
+
+    return selectedTypes;
+  }
+
   private generateStaticMap(mapDefinition: MapDefinition, options?: Record<string, any>): Map<string, RoomModel> {
     const roomMap = new Map<string, RoomModel>();
     const structure = mapDefinition['structure'] || {};
@@ -38,6 +52,7 @@ export class MapFactory {
 
       if (template) {
         const room = this.roomFactory.generateRoom(template, { coordinateKey: roomCoordinates });
+        room.enemyTypeids = this.generateEnemyTypeIds(mapDefinition);
 
         if (roomConfiguration.mapConnections) {
           roomConfiguration.mapConnections.forEach((externalEntry: any) => {
@@ -84,7 +99,7 @@ export class MapFactory {
 
       if (roomTemplate) {
         const room = this.roomFactory.generateRoom(roomTemplate, { coordinateKey });
-
+        room.enemyTypeids = this.generateEnemyTypeIds(mapDefinition);
         if (roomConfiguration.mapConnections) {
           roomConfiguration.mapConnections.forEach((externalEntry: any) => {
             const { direction, ...connectionDetails } = externalEntry;
@@ -136,7 +151,7 @@ export class MapFactory {
           availableRoomTemplates,
           { coordinateKey: neighborCoordinateKey }
         );
-
+        procedurallyGeneratedRoom.enemyTypeids = this.generateEnemyTypeIds(mapDefinition);
         roomMap.set(neighborCoordinateKey, procedurallyGeneratedRoom);
 
         this.roomFactory.addConnection(activeRoom, moveDirection, { connection: neighborCoordinateKey });

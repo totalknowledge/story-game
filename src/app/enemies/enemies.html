@@ -1,3 +1,3 @@
-@for (enemy of sortedEnemies(); track enemy().id) {
-    <app-character [character]="enemy()!"></app-character>
+@for (enemy of enemies(); track enemy.id) {
+  <app-character [character]="enemy"></app-character>
 }

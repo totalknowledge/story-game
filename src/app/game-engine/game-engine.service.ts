@@ -4,6 +4,7 @@ import { ItemModel } from '../item/item.model';
 import { CharacterService } from '../character/character.service';
 import { MapService } from '../map/map.service';
 import { Direction } from '../map/room/room.definitions';
+import { ItemFactory } from '../item/item.factory';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class GameEngineService {
   private readonly CRITICAL_THRESHOLD = 95;
   private characterService = inject(CharacterService);
   private mapService = inject(MapService);
+  private itemFactory = inject(ItemFactory);
 
   attack(attacker: CharacterModel, defender: CharacterModel): string[] {
     const combatLog: string[] = [];
@@ -71,16 +73,49 @@ export class GameEngineService {
   }
 
   movePlayer(command: string): string[] {
-    const direction = command as Direction;
+    const moveDirection = command as Direction;
+    const departingRoom = this.mapService.currentRoom();
 
-    const moveResults = this.mapService.move(direction);
-
-    const currentRoom = this.mapService.currentRoom();
-    if (currentRoom?.coordinates) {
-      this.characterService.movePlayer(currentRoom.coordinates);
+    if (departingRoom) {
+      const activeOccupants = this.characterService.getCharactersInRoom();
+      departingRoom.enemyIds = activeOccupants
+        .filter(character => character.id !== this.characterService.playerCharacterId)
+        .map(enemy => {
+          this.characterService.updateCharacter(enemy);
+          return enemy.id;
+        });
     }
 
-    return moveResults;
+    const movementNarrative = this.mapService.move(moveDirection);
+    const destinationRoom = this.mapService.currentRoom();
+
+    if (destinationRoom?.coordinates) {
+      const player = this.characterService.getPlayer()();
+      (this.characterService as any).charactersInRoom.set(new Map());
+
+      if (player) {
+        this.characterService.registerCharacter(player, true);
+      }
+
+      this.characterService.movePlayer(destinationRoom.coordinates);
+
+      if (destinationRoom.enemyIds.length > 0) {
+        destinationRoom.enemyIds.forEach(characterId => {
+          const cachedCharacter = (this.characterService as any).characterRegistry.get(characterId);
+          if (cachedCharacter) {
+            this.characterService.registerCharacter(cachedCharacter);
+          }
+        });
+      }
+      else if (destinationRoom.enemyTypeids.length > 0) {
+        destinationRoom.enemyTypeids.forEach(typeId => {
+          const newEnemySignal = this.characterService.spawnCharacter('enemy', typeId);
+          destinationRoom.enemyIds.push(newEnemySignal().id);
+        });
+      }
+    }
+
+    return movementNarrative;
   }
 
   searchCorpse(player: CharacterModel, targetName: string): string[] {

@@ -2,6 +2,12 @@ export type CharacterType = 'Player' | 'Enemy';
 
 export type CharacterClassification = 'normal' | 'elite' | 'unique';
 
+export interface Money {
+    copper: number;
+    silver: number;
+    gold: number;
+}
+
 export const EQUPEMENT_SLOTS = [
     { label: 'Head', key: 'head' },
     { label: 'Right\u00A0Hand', key: 'right-hand' },

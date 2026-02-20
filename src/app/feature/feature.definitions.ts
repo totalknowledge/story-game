@@ -12,7 +12,7 @@ export const FEATURE_TEMPLATES = [
     },
     {
         typeid: 'feature-general-store',
-        name: 'General Store',
+        name: 'Store',
         type: 'store',
         description: 'A merchant sells various goods here.',
         interactable: true,

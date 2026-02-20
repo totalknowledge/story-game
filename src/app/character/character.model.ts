@@ -1,4 +1,4 @@
-import { CharacterClassification } from "./character.definitions";
+import { CharacterClassification, Money } from "./character.definitions";
 
 export class CharacterModel {
     id: string;
@@ -15,6 +15,7 @@ export class CharacterModel {
     damage: number = 0;
     armor: number = 0;
     usedMana: number = 0;
+    private goldSilverCopper: Money = { copper: 0, silver: 0, gold: 0 };
     items: any[] = [];
     equipment = new Map<string, any>();
     spells: any[] = [];
@@ -45,5 +46,13 @@ export class CharacterModel {
 
     get isDead(): boolean {
         return this.dead || this.currentHealth <= 0;
+    }
+
+    get money(): Money {
+        return { ...this.goldSilverCopper };
+    }
+
+    set money(amount: Money) {
+        this.goldSilverCopper = { ...amount };
     }
 }

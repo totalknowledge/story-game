@@ -3,6 +3,7 @@ import { WORLD_MAPS } from './map.definitions';
 import { Direction } from './room/room.definitions';
 import { MapModel } from './map.model';
 import { MapFactory } from './map.factory';
+import { FeatureModel } from '../feature/feature.model';
 
 @Injectable({ providedIn: 'root' })
 export class MapService {
@@ -14,10 +15,36 @@ export class MapService {
   private currentRoomCoords = signal<string>('0,0,0');
   readonly displayMap = computed(() => this.currentMap());
   readonly currentRoom = computed(() => this.rooms()?.get(this.currentRoomCoords()));
-  readonly mapFactory = inject(MapFactory);
+  readonly activeFeature = signal<FeatureModel | null>(null);
+  private readonly mapFactory = inject(MapFactory);
 
   constructor() {
     this.loadMap('town');
+  }
+
+  toggleFeature(featureName?: string): string[] {
+    if (!featureName) {
+      this.activeFeature.set(null);
+      return ['Closed feature view.'];
+    }
+
+    const room = this.currentRoom();
+    if (!room) return ['No room to search for features.'];
+
+    const feature = room.features.find((f: FeatureModel) =>
+      f.name.toLowerCase().includes(featureName.toLowerCase())
+    );
+
+    if (!feature) {
+      return [`There is no "${featureName}" here.`];
+    }
+
+    if (!feature.interactable) {
+      return [`You cannot interact with the ${feature.name}.`];
+    }
+
+    this.activeFeature.set(feature);
+    return [`You open the ${feature.name}.`];
   }
 
   public activeFloorGrid() {

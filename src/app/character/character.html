@@ -145,8 +145,12 @@
             }
         </div>
 
-        <div class="text-[10px] opacity-50 text-right mt-2">
-            📍 {{ character().roomCoordinatesKey }}
+        <div class="text-[10px] opacity-50 mt-2 flex justify-between">
+            @if (isPlayer()) {
+            <span>💰 {{ character().money.copper }}g {{ character().money.silver }}s {{ character().money.gold
+                }}c</span>
+            }
+            <span class="ml-auto">📍 {{ character().roomCoordinatesKey }}</span>
         </div>
     </div>
 </div>

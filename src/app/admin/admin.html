@@ -1,0 +1,61 @@
+<div class="h-full flex flex-col p-4 gap-4 overflow-hidden">
+    <div role="tablist" class="tabs tabs-boxed">
+        <button role="tab" class="tab" [class.tab-active]="activeTab === 'items'"
+            (click)="activeTab = 'items'; selectedTypes.clear()">Items</button>
+        <button role="tab" class="tab" [class.tab-active]="activeTab === 'spells'"
+            (click)="activeTab = 'spells'; selectedTypes.clear()">Spells</button>
+        <button role="tab" class="tab" [class.tab-active]="activeTab === 'enemies'"
+            (click)="activeTab = 'enemies'; selectedTypes.clear()">Enemies</button>
+        <button role="tab" class="tab" [class.tab-active]="activeTab === 'features'"
+            (click)="activeTab = 'features'; selectedTypes.clear()">Features</button>
+    </div>
+
+    <div class="flex gap-4 items-center flex-wrap">
+        <div class="flex gap-2">
+            @for (type of availableTypes; track type) {
+            <label class="label cursor-pointer gap-2">
+                <input type="checkbox" class="checkbox checkbox-sm" [checked]="isTypeSelected(type)"
+                    (change)="toggleType(type)" />
+                <span class="label-text">{{ type }}</span>
+            </label>
+            }
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm" (click)="addRow()">Add Row</button>
+        <button class="btn btn-secondary btn-sm" (click)="toggleJson()">
+            {{ showJson ? 'Hide' : 'Show' }} JSON
+        </button>
+        <button class="btn btn-accent btn-sm" (click)="copyJsonToClipboard()">
+            Copy JSON
+        </button>
+    </div>
+
+    <div class="flex-1 overflow-auto">
+        <table class="table table-zebra table-sm">
+            <thead>
+                <tr>
+                    @for (column of currentColumns; track column) {
+                    <th>{{ column }}</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (row of currentData; track $index) {
+                <tr>
+                    @for (column of currentColumns; track column) {
+                    <td>{{ getValue(row, column) }}</td>
+                    }
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (showJson) {
+    <div class="bg-base-200 p-4 rounded-lg">
+        <pre class="text-xs overflow-auto max-h-96">{{ currentJson }}</pre>
+    </div>
+    }
+</div>

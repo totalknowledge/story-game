@@ -87,6 +87,7 @@ export class GameEngineService {
     const moveDirection = command as Direction;
     const departingRoom = this.mapService.currentRoom();
     const player = this.characterService.getPlayer()();
+    this.mapService.activeFeature.set(null);
 
     if (!player) return ['Cannot move - player not found.'];
 

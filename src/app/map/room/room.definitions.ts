@@ -263,7 +263,7 @@ export const ROOM_TEMPLATES: Partial<RoomModel>[] = [
     {
         typeid: 'town-shop',
         description: 'The General Store. Shelves are packed with rope, lanterns, and various supplies for the aspiring adventurer.',
-        featureTypeids: ['feature-merchant-stall']
+        featureTypeids: ['feature-general-store']
     },
     {
         typeid: 'town-empty-shops',

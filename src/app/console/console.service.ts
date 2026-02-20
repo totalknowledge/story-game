@@ -2,12 +2,14 @@ import { Injectable, signal, inject } from '@angular/core';
 import { GameEngineService } from '../game-engine/game-engine.service';
 import { CharacterService } from '../character/character.service';
 import { EnemyDecision } from '../enemies/enemy.decision';
+import { MapService } from '../map/map.service';
 
 @Injectable({ providedIn: 'root' })
 export class ConsoleService {
   private engine = inject(GameEngineService);
   private characterService = inject(CharacterService);
   private enemyDecision = inject(EnemyDecision);
+  private mapService = inject(MapService);
   readonly messages = signal<string[]>(['Welcome, adventurer.  This is Althea... a beautiful place plagued with monsters.']);
 
   log(message: string): void {
@@ -38,6 +40,9 @@ export class ConsoleService {
         this.handleCast(targetName);
         output.push(...this.enemyDecision.processEnemyTurns());
         break;
+      case 'close':
+        output = this.mapService.toggleFeature();
+        break;
       case 'drop':
         output = this.handleDrop(targetName);
         break;
@@ -59,6 +64,9 @@ export class ConsoleService {
         break;
       case 'take':
         output = this.handleTake(targetName);
+        break;
+      case 'use':
+        output = this.handleUse(targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
@@ -188,5 +196,10 @@ export class ConsoleService {
     if (!itemName) return ['Take what?'];
 
     return this.engine.take(player, itemName);
+  }
+
+  private handleUse(featureName: string): string[] {
+    if (!featureName) return ['Use what?'];
+    return this.mapService.toggleFeature(featureName);
   }
 }

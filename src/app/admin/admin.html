@@ -23,7 +23,7 @@
     </div>
 
     <div class="flex gap-2">
-        <button class="btn btn-primary btn-sm" (click)="addRow()">Add Row</button>
+        <button class="btn btn-primary btn-sm" (click)="addRow(!!editRow)">{{editRow ? 'Save' : 'Add'}}</button>
         <button class="btn btn-secondary btn-sm" (click)="toggleJson()">
             {{ showJson ? 'Hide' : 'Show' }} JSON
         </button>
@@ -42,10 +42,17 @@
                 </tr>
             </thead>
             <tbody>
+                <tr>
+                    @for (column of currentColumns; track column) {
+                    <td>
+                        <input type="text" class="input input-bordered input-xs w-full" [(ngModel)]="newData[column]" [name]="column">
+                    </td>
+                    }
+                </tr>
                 @for (row of currentData; track $index) {
                 <tr>
                     @for (column of currentColumns; track column) {
-                    <td>{{ getValue(row, column) }}</td>
+                    <td (click)="edit(row, $index)">{{ getValue(row, column) }}</td>
                     }
                 </tr>
                 }

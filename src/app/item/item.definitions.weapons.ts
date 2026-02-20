@@ -30,7 +30,7 @@ export const WEAPONS = [
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "fine",
-        "plusArmor": 1,
+        "plusArmor": 2,
         "damage": 4,
         "resilience": 5,
         "useMessages": [
@@ -43,7 +43,7 @@ export const WEAPONS = [
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "standard",
-        "plusArmor": 2,
+        "plusArmor": 1,
         "damage": 6,
         "resilience": 25,
         "useMessages": [
@@ -69,9 +69,9 @@ export const WEAPONS = [
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "elite",
-        "plusArmor": 3,
+        "plusArmor": 1,
         "damage": 9,
-        "resilience": 999,
+        "resilience": Infinity,
         "useMessages": [
             "{user} equips {item}."
         ]
@@ -82,7 +82,7 @@ export const WEAPONS = [
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "fine",
-        "plusArmor": 2,
+        "plusArmor": 1,
         "damage": 8,
         "resilience": 30,
         "useMessages": [
@@ -108,7 +108,7 @@ export const WEAPONS = [
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "fine",
-        "plusArmor": 3,
+        "plusArmor": 2,
         "damage": 6,
         "resilience": 30,
         "useMessages": [

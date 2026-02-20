@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CharacterModel } from './character.model';
 import { EQUPEMENT_SLOTS } from './character.definitions';
 import { Tooltip } from './tooltip/tooltip';
+import * as utilities from '../utilities/dice.definitions';
 
 @Component({
   selector: 'app-character',
@@ -14,4 +15,6 @@ export class Character {
   equipementSlots = EQUPEMENT_SLOTS;
 
   isPlayer = computed(() => this.character().typeid === 'player');
+
+  log = utilities.log;
 }

@@ -24,7 +24,7 @@ export class GameEngineService {
     const weapon = attacker.equipment.get('right-hand');
 
     const rawRoll = Math.floor(Math.random() * 100) + 1;
-    const modifiedRoll = rawRoll + attacker.toHit - defender.armor;
+    const modifiedRoll = rawRoll + (attacker.toHit ?? 0) - (defender.armor ?? 0);
 
     if (this.isMiss(rawRoll, modifiedRoll)) {
       combatLog.push(`${attacker.name} misses ${defender.name}.`);
@@ -329,9 +329,9 @@ export class GameEngineService {
     const damageDie = weapon ? weapon?.damage || 2 : 1;
     const rollResult = rollDice(1, damageDie);
     console.log('damageRoll: ' + rollResult + ' on a 1d' + damageDie +
-      " plus to damage is: " + attacker.toDamage
+      " plus to damage is: " + (attacker.toDamage || 0)
     );
-    const baseDamage = rollResult + attacker.toDamage;
+    const baseDamage = rollResult + (attacker.toDamage || 0);
 
     const criticalMultiplier = isCritical ? 1.5 : 1;
     return Math.max(1, Math.round(baseDamage * criticalMultiplier));

@@ -72,13 +72,13 @@ export function applyItemAcquisition(
 
 export function applyCombatRatingCalculation(character: CharacterModel): void {
     const healthComponent = character.maxHealth / 10;
-    const armorComponent = character.armor;
+    const armorComponent = (character.armor ?? 0);
     const healingComponent = 0.05 * calculatePotentialHealing(character);
 
     const avgWeaponDamage = getAverageWeaponDamage(character);
     const physicalCR =
-        character.toHit +
-        character.toDamage +
+        (character.toHit ?? 0) +
+        (character.toDamage ?? 0) +
         avgWeaponDamage +
         healthComponent +
         armorComponent +

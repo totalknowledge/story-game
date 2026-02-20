@@ -1,4 +1,3 @@
-import { SpellModel } from "../spell/spell.model";
 import { EquipLocation } from "./item.definitions";
 
 export class ItemModel {
@@ -7,16 +6,18 @@ export class ItemModel {
     name: string;
     type: string;
     equippableLocation?: EquipLocation;
-    damage?: number = 0;
-    plusHit?: number = 0;
-    minusToBeHit?: number = 0;
-    plusDamage?: number = 0;
+    cost?: number;
+    cr?: number;
+    damage?: number;
+    plusHit?: number;
+    minusToBeHit?: number;
+    plusDamage?: number;
     resilience: number;
-    plusArmor?: number = 0;
-    bonusHealth?: number = 0;
-    bonusMana?: number = 0;
-    heals?: number = 0;
-    restores?: number = 0;
+    plusArmor?: number;
+    bonusHealth?: number;
+    bonusMana?: number;
+    heals?: number;
+    restores?: number;
     useMessages: string[] = [];
     teaches: string[] = [];
 

@@ -10,7 +10,7 @@ import { SpellFactory } from '../spell/spell.factory';
 export class ItemFactory {
   spellFactory = new SpellFactory();
 
-  createItem(typeid: string): ItemModel {
+  createItem(typeid: string, options?: Record<string, string>): ItemModel {
     const itemTemplate = ITEM_TEMPLATES.find((template) => template.typeid === typeid) as any;
 
     if (!itemTemplate) {

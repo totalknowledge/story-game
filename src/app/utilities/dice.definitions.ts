@@ -20,3 +20,7 @@ export const shuffleInPlace = (entries: any[]): void => {
         [entries[currentIndex], entries[swapIndex]] = [entries[swapIndex], currentEntry];
     });
 };
+
+export const log = (entity2Log: any) => {
+    console.log(entity2Log);
+}

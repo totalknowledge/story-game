@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Player } from "../player/player";
-import { Header } from "../header/header";
 import { Enemies } from "../enemies/enemies";
 import { ConsoleComponent } from "../console/console";
 import { Map } from "../map/map"

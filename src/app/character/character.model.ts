@@ -3,6 +3,7 @@ import { CharacterClassification, Money } from "./character.definitions";
 export class CharacterModel {
     id: string;
     typeid: string;
+    type: string = 'Beast';
     name: string;
     named: boolean = false;
     classification: CharacterClassification = 'normal';
@@ -10,10 +11,10 @@ export class CharacterModel {
     baseMana: number;
     maxHealth: number;
     maxMana: number;
-    toHit: number = 0;
-    toDamage: number = 0;
+    toHit?: number;
+    toDamage?: number;
+    armor?: number;
     damage: number = 0;
-    armor: number = 0;
     usedMana: number = 0;
     private goldSilverCopper: Money = { copper: 0, silver: 0, gold: 0 };
     items: any[] = [];
@@ -23,12 +24,12 @@ export class CharacterModel {
     roomCoordinatesKey: string = '0,0,0';
     combatRating?: number;
 
-    constructor(name: string, health: number, mana: number, template: any = {}) {
+    constructor(name: string, baseHealth: number, baseMana: number, template: any = {}) {
         this.name = name;
-        this.baseHealth = health;
-        this.baseMana = mana;
-        this.maxHealth = health;
-        this.maxMana = mana;
+        this.baseHealth = baseHealth;
+        this.baseMana = baseMana;
+        this.maxHealth = baseHealth;
+        this.maxMana = baseMana;
 
         Object.assign(this, template);
 

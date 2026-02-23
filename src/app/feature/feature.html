@@ -10,7 +10,7 @@
             <div class="flex justify-between items-center bg-base-300 p-2 rounded">
                 <span>{{ item.name }}</span>
                 @if (feature().type === 'Store' && item) {
-                <span class="badge badge-primary">{{ formatMoney(item.cost) }}c</span>
+                <span class="badge badge-primary">{{ formatMoney(item.cost) }}</span>
                 }
             </div>
             }

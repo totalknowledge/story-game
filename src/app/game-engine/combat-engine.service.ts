@@ -109,6 +109,7 @@ export class CombatEngineService {
     const spellHitRoll = d100();
     const hitBonus = Math.round(caster.maxMana * this.MANA_TOHIT_MULTIPLIER);
     const targetEvasion = Math.round((target.maxMana ?? 0) * this.MANA_MISS_MULTIPLIER);
+    const bonusDamage = Math.round((caster.maxMana ?? 0) * this.MANA_EFFECT_MULTIPLIER);
     const spellModifiedRoll = Math.max(1, (spellHitRoll + hitBonus - targetEvasion));
 
     console.log(
@@ -120,16 +121,15 @@ export class CombatEngineService {
     }
 
     const isCritical = this.isCrit(spellHitRoll, spellModifiedRoll);
-    const manaDamageBonus = caster.maxMana * this.MANA_EFFECT_MULTIPLIER;
 
-    let damageDealt = spell.damage + manaDamageBonus;
+    let damageDealt = spell.damage + bonusDamage;
     if (isSecondary) damageDealt = damageDealt / 2;
     if (isCritical) damageDealt = damageDealt * 1.5;
 
     const finalDamage = Math.max(1, Math.round(damageDealt));
 
     console.log(
-      `[SPELL DAMAGE] ${spell.name} | Base: ${spell.damage} | Mana +Dmg: ${manaDamageBonus} | Secondary: ${isSecondary} | Final: ${finalDamage}`
+      `[SPELL DAMAGE] ${spell.name} | Base: ${spell.damage} | Mana +Dmg: ${bonusDamage} | Secondary: ${isSecondary} | Final: ${finalDamage}`
     );
 
     target.damage += finalDamage;

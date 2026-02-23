@@ -24,7 +24,7 @@ export class FeatureService {
 
   public processPlace(player: CharacterModel, item: any, feature: any): { isSale: boolean, message?: string } {
     if (feature.type === 'Store') {
-      const baseValue = item.price || 100;
+      const baseValue = item.cost || 100;
       const sellValue = Math.round(baseValue * this.SELL_MULTIPLIER);
       const playerFunds = this.characterService.getFlatCurrencyAmount(player);
 
@@ -41,7 +41,7 @@ export class FeatureService {
 
   public processTake(player: CharacterModel, item: any, feature: any): { allowed: boolean, message?: string } {
     if (feature.type === 'Store') {
-      const price = item.price || 100;
+      const price = item.cost || 100;
       const playerFunds = this.characterService.getFlatCurrencyAmount(player);
 
       if (playerFunds < price) {

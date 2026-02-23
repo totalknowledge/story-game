@@ -10,8 +10,8 @@
             @for (item of feature().items; track item.id) {
             <div class="flex justify-between items-center bg-base-300 p-2 rounded">
                 <span>{{ item.name }}</span>
-                @if (feature().type === 'store' && item) {
-                <span class="badge badge-primary">1g</span>
+                @if (feature().type === 'Store' && item) {
+                <span class="badge badge-primary">{{ item.cost }}c</span>
                 }
             </div>
             }

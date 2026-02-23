@@ -51,14 +51,14 @@
                             <span>{{ character().currentHealth }}/{{ character().maxHealth }}</span>
                         </div>
                         <progress class="progress progress-error w-full h-1.5"
-                            [value]="(character().currentHealth / character().maxHealth) * 100" max="100"></progress>
+                            [value]="((character().currentHealth || 1) / (character().maxHealth || 1)) * 100" max="100"></progress>
                     </div>
 
                     @if (character().maxMana > 0) {
                     <div class="flex flex-col gap-0.5">
                         <div class="flex justify-between text-[10px] font-bold">
                             <span>MP</span>
-                            <span>{{ character().currentMana }}/{{ character().maxMana }}</span>
+                            <span>{{ character().currentMana }}/{{ character().maxMana || 1 }}</span>
                         </div>
                         <progress class="progress progress-info w-full h-1.5"
                             [value]="(character().currentMana / character().maxMana) * 100" max="100"></progress>
@@ -150,8 +150,8 @@
 
         <div class="text-[10px] opacity-50 mt-2 flex justify-between">
             @if (isPlayer()) {
-            <span>💰 {{ character().money.copper }}g {{ character().money.silver }}s {{ character().money.gold
-                }}c</span>
+            <span>💰 {{ character().money.copper }}c {{ character().money.silver }}s {{ character().money.gold
+                }}g</span>
             }
             <span class="ml-auto">📍 {{ character().roomCoordinatesKey }}</span>
         </div>

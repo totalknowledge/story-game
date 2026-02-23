@@ -1,10 +1,10 @@
-export type FeatureType = 'bank' | 'store' | 'chest' | 'wellspring' | 'decoration';
+export type FeatureType = 'Bank' | 'Store' | 'Chest' | 'Wellspring' | 'Decoration';
 
 export const FEATURE_TEMPLATES = [
     {
         typeid: 'feature-bank-vault',
         name: 'Bank Vault',
-        type: 'bank',
+        type: 'Bank',
         description: 'A secure vault where you can store your belongings.',
         interactable: true,
         itemSlots: 20,
@@ -13,7 +13,7 @@ export const FEATURE_TEMPLATES = [
     {
         typeid: 'feature-general-store',
         name: 'Store',
-        type: 'store',
+        type: 'Store',
         description: 'A merchant sells various goods here.',
         interactable: true,
         sellMultiplier: 0.5,
@@ -23,7 +23,7 @@ export const FEATURE_TEMPLATES = [
     {
         typeid: 'feature-treasure-chest',
         name: 'Treasure Chest',
-        type: 'chest',
+        type: 'Chest',
         description: 'A wooden chest bound with iron.',
         interactable: true,
         items: []
@@ -31,15 +31,23 @@ export const FEATURE_TEMPLATES = [
     {
         typeid: 'feature-mana-wellspring',
         name: 'Mana Wellspring',
-        type: 'wellspring',
+        type: 'Wellspring',
         description: 'A shimmering pool of magical energy.',
         interactable: true
     },
     {
         typeid: 'feature-statue',
         name: 'Ancient Statue',
-        type: 'decoration',
+        type: 'Decoration',
         description: 'A weathered stone statue of a forgotten hero.',
         interactable: false
+    },
+    {
+        typeid: 'feature-blacksmith-forge',
+        name: 'Blacksmith Forge',
+        type: 'store',
+        interactable: true,
+        description: 'A massive stone forge with glowing embers.',
+        items: []
     }
 ];

@@ -23,7 +23,7 @@ export class FeatureModel {
         this.id = crypto.randomUUID();
         this.typeid = template.typeid || 'feature-generic';
         this.name = template.name || 'Feature';
-        this.type = template.type || 'decoration';
+        this.type = template.type || 'Decoration';
         this.description = template.description || '';
         this.interactable = template.interactable ?? true;
         this.items = template.items || [];

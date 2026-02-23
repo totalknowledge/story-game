@@ -31,17 +31,15 @@ export function applyBonusCalculation(character: CharacterModel): CharacterModel
     return character;
 }
 
-export function applyEquipItem(
-    character: CharacterModel,
-    item: ItemModel
-): boolean {
-    const slot = item.equippableLocation;
-
-    if (!slot || slot === 'none') return false;
-    if (character.equipment.has(slot)) return false;
-
-    character.equipment.set(slot, item);
-    character.items = character.items.filter(existingItem => existingItem !== item);
+export function applyEquipItem(character: CharacterModel, item: ItemModel): boolean {
+    const targetSlot = item.equippableLocation;
+    if (!targetSlot || targetSlot === 'none') return false;
+    const currentlyEquippedItem = character.equipment.get(targetSlot);
+    character.items = character.items.filter(inventoryItem => inventoryItem !== item);
+    if (currentlyEquippedItem) {
+        character.items.push(currentlyEquippedItem);
+    }
+    character.equipment.set(targetSlot, item);
 
     applyBonusCalculation(character);
     return true;
@@ -127,12 +125,9 @@ export function equipCharacter(character: CharacterModel, itemFactory: ItemFacto
     const items: ItemModel[] = [];
 
     if (characterTemplate?.equippedItemTemplate) {
-        const naturalWeapon = new ItemModel({
-            ...characterTemplate.equippedItemTemplate,
-            equippableLocation: 'right-hand',
-            isNatural: true
+        characterTemplate.equippedItemTemplate?.forEach((item: Partial<ItemModel>) => {
+            items.push(new ItemModel(item));
         });
-        items.push(naturalWeapon);
     } else {
         items.push(itemFactory.createRandomItem(['Weapon']));
     }

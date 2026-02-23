@@ -17,7 +17,7 @@ export class FeatureFactory {
 
     const feature = new FeatureModel(template);
 
-    if (template.type === 'store' && feature.items.length === 0) {
+    if (template.type === 'Store' && feature.items.length === 0) {
       this.populateStoreInventory(feature);
     }
 

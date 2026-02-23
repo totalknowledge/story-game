@@ -32,9 +32,9 @@ export class EnemyDecision {
     const outputDialog: string[] = [];
     let result;
     if (enemy.spells.length > 0) {
-      result = this.gameEngine.cast(enemy, pickRandom(enemy.spells), player);
+      result = this.gameEngine.cast(enemy, pickRandom(enemy.spells), player.name);
     } else {
-      result = this.gameEngine.attack(enemy, player);
+      result = this.gameEngine.attack(enemy, player.name);
     }
     outputDialog.push(...result);
     return outputDialog;

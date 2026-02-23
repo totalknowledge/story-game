@@ -16,9 +16,10 @@ export class ConsoleComponent implements AfterViewChecked {
   public currentInput = '';
 
   submit() {
-    if (this.currentInput.trim()) {
-      this.consoleService.execute(this.currentInput);
-      this.currentInput = '';
+    const input = this.currentInput.trim();
+    this.currentInput = '';
+    if (input) {
+      this.consoleService.execute(input);
     }
   }
 

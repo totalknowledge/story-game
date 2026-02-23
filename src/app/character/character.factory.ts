@@ -19,8 +19,8 @@ export class CharacterFactory {
     const characterTemplate = this.buildTemplate(type, name);
     const character = new CharacterModel(
       characterTemplate.name,
-      characterTemplate.health,
-      characterTemplate.mana,
+      characterTemplate.baseHealth,
+      characterTemplate.baseMana,
       characterTemplate
     );
 
@@ -57,8 +57,8 @@ export class CharacterFactory {
       characterTemplate = {
         ...characterTemplate,
         name: characterName,
-        baseHealth: Math.round(characterTemplate.health * 1.3),
-        baseMana: Math.round(characterTemplate.mana * 1.3),
+        baseHealth: Math.round(characterTemplate.baseHealth * 1.3),
+        baseMana: Math.round(characterTemplate.baseMana * 1.3),
         named: true,
         classification
       };
@@ -66,8 +66,8 @@ export class CharacterFactory {
       characterTemplate = {
         ...characterTemplate,
         name: `Elite ${characterTemplate.name}`,
-        baseHealth: Math.round(characterTemplate.health * 1.6),
-        baseMana: Math.round(characterTemplate.mana * 1.6),
+        baseHealth: Math.round(characterTemplate.baseHealth * 1.6),
+        baseMana: Math.round(characterTemplate.baseMana * 1.6),
         classification
       };
     } else {

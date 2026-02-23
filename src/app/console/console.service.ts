@@ -66,7 +66,7 @@ export class ConsoleService {
         output = this.handleTake(targetName);
         break;
       case 'use':
-        output = this.handleUse(targetName);
+        output = this.engine.use(this.characterService.getPlayer()()!, targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
@@ -82,22 +82,7 @@ export class ConsoleService {
       return output;
     }
 
-    if (!targetName) {
-      output.push('Attack whom?');
-      return output;
-    }
-
-    const roomEnemies = this.characterService.getActiveEnemies();
-    const target = roomEnemies.find(enemy =>
-      enemy.name.toLowerCase().includes(targetName) && !enemy.isDead
-    );
-
-    if (!target) {
-      output.push(`There is no "${targetName}" here to attack.`);
-      return output;
-    }
-
-    const combatResults = this.engine.attack(player, target);
+    const combatResults = this.engine.attack(player, targetName);
     combatResults.forEach(result => output.push(result));
     return output;
   }
@@ -135,7 +120,7 @@ export class ConsoleService {
       enemy.name.toLowerCase().includes(targetNameInput.toLowerCase()) && !enemy.isDead
     );
 
-    const combatResults = this.engine.cast(player, selectedSpell, potentialTarget);
+    const combatResults = this.engine.cast(player, selectedSpell, targetNameInput);
     combatResults.forEach(line => this.log(line));
   }
 
@@ -161,15 +146,18 @@ export class ConsoleService {
     if (!itemName) return ['Equip what?'];
 
     const itemToEquip = player.items.find(inventoryItem =>
-      inventoryItem.name.toLowerCase().includes(itemName.toLowerCase())
+        inventoryItem.name.toLowerCase().includes(itemName.toLowerCase())
     );
 
     if (!itemToEquip) {
-      return [`You are not carrying a "${itemName}".`];
+        return [`You are not carrying a "${itemName}".`];
     }
+    const equipMessages = this.characterService.equipItem(player.id, itemToEquip);
+    player.items = player.items.filter(inventoryItem => inventoryItem.id !== itemToEquip.id);
+    this.characterService.updateCharacter(player);
 
-    return this.characterService.equipItem(player.id, itemToEquip);
-  }
+    return equipMessages;
+}
 
   private handlePlace(input: string): string[] {
     const player = this.characterService.getPlayer()();
@@ -196,10 +184,5 @@ export class ConsoleService {
     if (!itemName) return ['Take what?'];
 
     return this.engine.take(player, itemName);
-  }
-
-  private handleUse(featureName: string): string[] {
-    if (!featureName) return ['Use what?'];
-    return this.mapService.toggleFeature(featureName);
   }
 }

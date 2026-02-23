@@ -5,249 +5,149 @@ import { CharacterService } from '../character/character.service';
 import { MapService } from '../map/map.service';
 import { Direction } from '../map/room/room.definitions';
 import { ItemFactory } from '../item/item.factory';
-import { d100, rollDice } from '../utilities/dice.definitions';
 import { FeatureFactory } from '../feature/feature.factory';
+import { TargetingEngine } from './target-engine.service';
+import { SpellModel } from '../spell/spell.model';
+import { CombatEngineService } from './combat-engine.service';
+import { InteractionEngineService } from './interaction-engine.service';
+import { MovementEngineService } from './movement-engine.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameEngineService {
-  private readonly MISS_THRESHOLD = 10;
-  private readonly CRITICAL_THRESHOLD = 95;
+  private targetingEngine = inject(TargetingEngine);
+  private combatEngine = inject(CombatEngineService);
+  private interactionEngine = inject(InteractionEngineService);
+  private movementEngine = inject(MovementEngineService);
+
   private characterService = inject(CharacterService);
   private mapService = inject(MapService);
   private itemFactory = inject(ItemFactory);
   private featureFactory = inject(FeatureFactory);
 
-  attack(attacker: CharacterModel, defender: CharacterModel): string[] {
-    const combatLog: string[] = [];
-    const weapon = attacker.equipment.get('right-hand');
+  attack(attacker: CharacterModel, targetFragment: string): string[] {
+    const charactersInRoom = this.characterService.getCharactersInRoom();
 
-    const rawRoll = Math.floor(Math.random() * 100) + 1;
-    const modifiedRoll = rawRoll + (attacker.toHit ?? 0) - (defender.armor ?? 0);
+    const targetingResult = this.targetingEngine.resolveTargets({
+      actor: attacker,
+      targetFragment,
+      charactersInRoom,
+      determinationScheme: 'single-target'
+    });
 
-    if (this.isMiss(rawRoll, modifiedRoll)) {
-      combatLog.push(`${attacker.name} misses ${defender.name}.`);
-      return combatLog;
+    if (!targetingResult.hostileTargets || targetingResult.hostileTargets.length === 0) {
+      return [`${attacker.name} cannot find a target.`];
     }
 
-    const isCritical = this.isCrit(rawRoll, modifiedRoll);
-    const damageDealt = this.calculateDamage(attacker, weapon, isCritical);
-
-    defender.damage += damageDealt;
-
-    const hitType = isCritical ? 'critically hits' : 'hits';
-    combatLog.push(`${attacker.name} ${hitType} ${defender.name} for ${damageDealt} damage!`);
-
-    if (defender.isDead) {
-      defender.dead = true;
-      combatLog.push(`${defender.name} has been slain!`);
-    }
-
-    this.characterService.updateCharacter(defender);
-
-    return combatLog;
+    const defender = targetingResult.hostileTargets[0];
+    return this.combatEngine.attack(attacker, defender);
   }
 
   lookAround(): string[] {
     const currentRoom = this.mapService.currentRoom();
-    const player = this.characterService.getPlayer()();
+    if (!currentRoom) return ["You are lost in the void."];
 
-    if (!currentRoom) {
-      return ["You are lost in the void."];
-    }
-    const viewLines: string[] = [];
-    viewLines.push(`[${currentRoom.typeid?.toUpperCase() || 'Room'}]`);
-    viewLines.push(currentRoom.description);
+    const viewLines: string[] = [
+      `[${currentRoom.typeid?.toUpperCase() || 'Room'}]`,
+      currentRoom.description
+    ];
 
-    const enemiesHere = this.characterService.getActiveEnemies().filter(enemy =>
-      enemy.roomCoordinatesKey === player?.roomCoordinatesKey && enemy.id !== player?.id
-    );
+    // Leverages the Signal we built earlier
+    const enemiesHere = this.characterService.enemiesInRoomEntities();
 
     if (enemiesHere.length > 0) {
       viewLines.push("Occupants:");
       enemiesHere.forEach(enemy => {
-        viewLines.push(` - ${enemy.name} is here (${enemy.currentHealth} HP).`);
+        const status = enemy.isDead ? '(Dead)' : `(${enemy.currentHealth} HP)`;
+        viewLines.push(` - ${enemy.name} is here ${status}.`);
       });
     }
 
     if (currentRoom.items.length > 0) {
-      viewLines.push("Items:");
-      currentRoom.items.forEach(item => {
-        viewLines.push(` - ${item.name}`);
-      });
+      viewLines.push("Items:", ...currentRoom.items.map(i => ` - ${i.name}`));
     }
 
     viewLines.push(...currentRoom.directions);
-
     return viewLines;
   }
 
-  movePlayer(command: string): string[] {
+  public movePlayer(command: string): string[] {
     const moveDirection = command as Direction;
+    const player = this.characterService.getPlayerEntity();
     const departingRoom = this.mapService.currentRoom();
-    const player = this.characterService.getPlayer()();
-    this.mapService.activeFeature.set(null);
 
-    if (!player) return ['Cannot move - player not found.'];
+    if (!player) return ['Movement failed.'];
 
     if (departingRoom) {
-      this.saveRoomState(departingRoom);
+      this.mapService.updateRoom(departingRoom.coordinateKey, {
+        enemyIds: this.characterService.enemiesInRoomEntities().map(character => character.id)
+      });
     }
 
-    const movementNarrative = this.mapService.move(moveDirection);
-    movementNarrative.push(...this.rest(player));
+    this.mapService.activeFeature.set(null);
+    const narrative = this.mapService.move(moveDirection);
     const destinationRoom = this.mapService.currentRoom();
 
-    if (destinationRoom?.coordinates) {
-      this.loadRoomState(destinationRoom, player);
-    }
+    if (destinationRoom) {
+      const destinationKey = destinationRoom.coordinateKey;
+      const roomHydration = this.movementEngine.processMovement(destinationRoom);
+      destinationRoom.items = roomHydration.items;
+      destinationRoom.features = roomHydration.features;
+      this.characterService.loadRoomCharacters(destinationRoom.enemyIds, roomHydration.enemies);
 
-    return movementNarrative;
-  }
+      this.characterService.moveCharacter(destinationKey, player.id);
 
-  private saveRoomState(room: any): void {
-    const occupants = this.characterService.getCharactersInRoom();
-    room.enemyIds = occupants
-      .filter(character => character.id !== this.characterService.playerCharacterId)
-      .map(enemy => enemy.id);
-  }
-
-  private loadRoomState(room: any, player: CharacterModel): void {
-    (this.characterService as any).charactersInRoom.set(new Map());
-    this.characterService.registerCharacter(player, true);
-    player.roomCoordinatesKey = `${room.coordinates.x},${room.coordinates.y},${room.coordinates.z}`;
-
-    if (room.enemyIds.length > 0) {
-      this.loadExistingEnemies(room);
-    } else if (room.enemyTypeids.length > 0) {
-      this.spawnNewEnemies(room);
-    }
-
-    if (room.featureTypeids && room.featureTypeids.length > 0 && room.features.length === 0) {
-      room.featureTypeids.forEach((typeid: string) => {
-        const feature = this.featureFactory.createFeature(typeid);
-        room.features.push(feature);
-      });
-    }
-
-    if (room.itemTypeids && room.itemTypeids.length > 0 && room.items.length === 0) {
-      room.itemTypeids.forEach((typeid: string) => {
-        const item = this.itemFactory.createItem(typeid);
-        room.items.push(item);
-      });
-    }
-  }
-
-  private loadExistingEnemies(room: any): void {
-    room.enemyIds.forEach((characterId: string) => {
-      const cachedCharacter = (this.characterService as any).characterRegistry.get(characterId);
-      if (cachedCharacter) {
-        this.characterService.registerCharacter(cachedCharacter);
+      if (!destinationRoom.visited) {
+        this.mapService.updateRoom(destinationKey, {
+          items: roomHydration.items,
+          features: roomHydration.features,
+          enemyIds: roomHydration.enemies.map(enemy => enemy.id),
+          visited: true
+        });
       }
-    });
-  }
+    }
 
-  private spawnNewEnemies(room: any): void {
-    room.enemyTypeids.forEach((typeId: string) => {
-      const newEnemy = this.characterService.spawnCharacter(typeId)();
-      room.enemyIds.push(newEnemy.id);
-    });
+    return narrative;
   }
-
-  // game-engine.service.ts - add these methods
 
   take(player: CharacterModel, itemName: string): string[] {
     const room = this.mapService.currentRoom();
     if (!room) return ['You cannot take items here.'];
 
-    const roomItems = [...room.items];
-    const featureItems = room.features
-      .filter((f: any) => f.interactable && f.items)
-      .flatMap((f: any) => f.items.map((item: any) => ({ item, feature: f })));
-
-    const allAvailableItems = [
-      ...roomItems.map(item => ({ item, source: 'room' })),
-      ...featureItems.map(({ item, feature }) => ({ item, source: feature }))
-    ];
-
-    const targetItem = allAvailableItems.find(({ item }) =>
-      item.name.toLowerCase().includes(itemName.toLowerCase())
-    );
-
-    if (!targetItem) {
-      return [`There is no "${itemName}" here to take.`];
+    const activeFeature = this.mapService.activeFeature();
+    if (activeFeature) {
+      return this.interactionEngine.take(player, itemName, activeFeature);
     }
 
-    const acquired = this.characterService.acquireItem(player.id, [targetItem.item]);
+    const targetingResult = this.targetingEngine.resolveTargets({
+      actor: player,
+      targetFragment: itemName,
+      featuresInRoom: room.features,
+      determinationScheme: 'use'
+    });
 
-    if (!acquired) {
-      return [`Your inventory is full.`];
-    }
+    const feature = targetingResult.featureTargets?.[0];
+    if (!feature) return [`There is no "${itemName}" here.`];
 
-    if (targetItem.source === 'room') {
-      room.items = room.items.filter(i => i.id !== targetItem.item.id);
-    } else {
-      targetItem.source.items = targetItem.source.items.filter((i: any) => i.id !== targetItem.item.id);
-    }
-
-    return [`You took ${targetItem.item.name}.`];
+    return this.interactionEngine.take(player, itemName, feature);
   }
 
   place(player: CharacterModel, itemName: string, featureName?: string): string[] {
     const room = this.mapService.currentRoom();
     if (!room) return ['You cannot place items here.'];
 
-    const openFeatures = room.features.filter((f: any) =>
-      f.interactable && f.items && (!f.itemSlots || f.items.length < f.itemSlots)
-    );
+    const targetingResult = this.targetingEngine.resolveTargets({
+      actor: player,
+      targetFragment: featureName,
+      featuresInRoom: room.features,
+      determinationScheme: 'use'
+    });
 
-    if (openFeatures.length === 0) {
-      return ['There is nowhere to place items here.'];
-    }
+    const feature = targetingResult.featureTargets?.[0];
+    if (!feature) return ['There is nowhere to place items here.'];
 
-    let targetFeature = openFeatures[0];
-    if (featureName) {
-      const found = openFeatures.find((f: any) =>
-        f.name.toLowerCase().includes(featureName.toLowerCase())
-      );
-      if (!found) {
-        return [`There is no "${featureName}" here to place items in.`];
-      }
-      targetFeature = found;
-    }
-
-    const equippedItem = Array.from(player.equipment.values()).find((item: any) =>
-      item.name.toLowerCase().includes(itemName.toLowerCase())
-    );
-
-    const inventoryItem = player.items.find(item =>
-      item.name.toLowerCase().includes(itemName.toLowerCase())
-    );
-
-    const itemToPlace = equippedItem || inventoryItem;
-
-    if (!itemToPlace) {
-      return [`You are not carrying a "${itemName}".`];
-    }
-
-    if (targetFeature.itemSlots && targetFeature.items.length >= targetFeature.itemSlots) {
-      return [`The ${targetFeature.name} is full.`];
-    }
-
-    if (equippedItem) {
-      const slot = Array.from(player.equipment.entries()).find(([_, item]) => item.id === equippedItem.id)?.[0];
-      if (slot) {
-        player.equipment.delete(slot);
-      }
-    } else {
-      player.items = player.items.filter(i => i.id !== itemToPlace.id);
-    }
-
-    targetFeature.items.push(itemToPlace);
-    this.characterService.updateCharacter(player);
-
-    return [`You placed ${itemToPlace.name} in the ${targetFeature.name}.`];
+    return this.interactionEngine.place(player, itemName, feature);
   }
 
   searchCorpse(player: CharacterModel, targetName: string): string[] {
@@ -311,33 +211,7 @@ export class GameEngineService {
     return output;
   }
 
-  private isMiss(rawRoll: number, modifiedRoll: number): boolean {
-    if (rawRoll === 1) return true;
-    if (rawRoll === 100) return false;
-
-    return modifiedRoll <= this.MISS_THRESHOLD;
-  }
-
-  private isCrit(rawRoll: number, modifiedRoll: number): boolean {
-    if (rawRoll === 1) return false;
-    if (rawRoll === 100) return true;
-
-    return modifiedRoll >= this.CRITICAL_THRESHOLD;
-  }
-
-  private calculateDamage(attacker: CharacterModel, weapon: ItemModel | undefined, isCritical: boolean): number {
-    const damageDie = weapon ? weapon?.damage || 2 : 1;
-    const rollResult = rollDice(1, damageDie);
-    console.log('damageRoll: ' + rollResult + ' on a 1d' + damageDie +
-      " plus to damage is: " + (attacker.toDamage || 0)
-    );
-    const baseDamage = rollResult + (attacker.toDamage || 0);
-
-    const criticalMultiplier = isCritical ? 1.5 : 1;
-    return Math.max(1, Math.round(baseDamage * criticalMultiplier));
-  }
-
-  cast(caster: CharacterModel, spell: any, target?: CharacterModel): string[] {
+  cast(caster: CharacterModel, spell: SpellModel, targetFragment: string): string[] {
     const combatLog: string[] = [];
 
     if (caster.currentMana < spell.manaCost) {
@@ -345,36 +219,26 @@ export class GameEngineService {
       return combatLog;
     }
 
-    const targets = this.determineSpellTargets(caster, spell, target);
+    const charactersInRoom = this.characterService.getCharactersInRoom();
 
-    if (targets.length === 0 && spell.effect !== 'heal') {
+    const targetingResult = this.targetingEngine.resolveTargets({
+      actor: caster,
+      targetFragment,
+      charactersInRoom,
+      determinationScheme: spell.effect as any
+    });
+
+    const enemies = targetingResult.hostileTargets || [];
+    const allies = targetingResult.friendlyTargets || [];
+
+    if (enemies.length === 0 && spell.effect !== 'heal') {
       combatLog.push(`${caster.name} prepares ${spell.name}, but there is no valid target!`);
       return combatLog;
     }
 
-    caster.usedMana += spell.manaCost;
+    const resolutionLog = this.combatEngine.cast(caster, spell, enemies, allies);
+    combatLog.push(...resolutionLog);
 
-    const castMessage = spell.castMessages[0].replace('{user}', caster.name);
-    combatLog.push(castMessage);
-
-    if (spell.effect === 'heal') {
-      const healAmount = spell.healsUser || 0;
-      caster.damage = Math.max(0, caster.damage - healAmount);
-      combatLog.push(`${spell.name} restores ${healAmount} health to ${caster.name}!`);
-    } else {
-      targets.forEach((target, index) => {
-        const isHalf = index > 0 && spell.effect === 'additional-target';
-        combatLog.push(...this.resolveSpellEffect(caster, target, spell, isHalf));
-        this.characterService.updateCharacter(target);
-      });
-
-      if (spell.effect === 'area' && spell.healsUser) {
-        caster.damage = Math.max(0, caster.damage - spell.healsUser);
-        combatLog.push(`${spell.name} mends ${caster.name}'s wounds for ${spell.healsUser}!`);
-      }
-    }
-
-    this.characterService.updateCharacter(caster);
     return combatLog;
   }
 
@@ -387,27 +251,6 @@ export class GameEngineService {
     this.characterService.updateCharacter(player);
 
     return [`You dropped ${item.name}.`];
-  }
-
-  private determineSpellTargets(caster: CharacterModel, spell: any, target?: CharacterModel): CharacterModel[] {
-    const enemies = this.characterService.getActiveEnemies();
-
-    if (spell.effect === 'area') return enemies;
-    if (spell.effect === 'heal') return [caster];
-
-    if (target) {
-      return [target];
-    }
-
-    if (enemies.length > 0) {
-      const primary = enemies[0];
-      if (spell.mechanic === 'target-additional' && enemies.length > 1) {
-        return [primary, enemies[1]];
-      }
-      return [primary];
-    }
-
-    return [];
   }
 
   rest(player: CharacterModel): string[] {
@@ -429,41 +272,9 @@ export class GameEngineService {
 
     return messages;
   }
+  use(player: CharacterModel, targetName: string): string[] {
+    if (!player) return ['You do not exist.'];
 
-  private resolveSpellEffect(caster: CharacterModel, defender: CharacterModel, spell: any, isHalfDamage: boolean): string[] {
-    const log: string[] = [];
-    const spellToHit = Math.round(caster.maxMana / 10);
-    const spellBonusDamage = Math.round(caster.maxMana / 2);
-    const targetSpellArmor = Math.round(defender.maxMana / 2);
-
-    const rawRoll = d100();
-    const modifiedRoll = rawRoll + spellToHit - targetSpellArmor;
-
-    if (this.isMiss(rawRoll, modifiedRoll)) {
-      log.push(`${spell.name} fizzles against ${defender.name}.`);
-      return log;
-    }
-
-    const isCritical = this.isCrit(rawRoll, modifiedRoll);
-    let spellPower = rollDice(1, spell.damage) + spellBonusDamage;
-
-    if (isCritical) spellPower *= 1.5;
-    if (isHalfDamage) spellPower = Math.floor(spellPower / 2);
-
-    defender.damage += spellPower;
-    log.push(`${spell.name} hits ${defender.name} for ${spellPower} damage!`);
-
-    if (spell.effect === 'vampiric' && spellPower > 0) {
-      const healValue = spell.healsUser || Math.floor(spellPower / 2);
-      caster.damage = Math.max(0, caster.damage - healValue);
-      log.push(`${caster.name} siphons ${healValue} health!`);
-    }
-
-    if (defender.isDead) {
-      defender.dead = true;
-      log.push(`${defender.name} has been destroyed!`);
-    }
-
-    return log;
+    return this.interactionEngine.use(player, targetName);
   }
 }

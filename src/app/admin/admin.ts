@@ -4,11 +4,11 @@ import { SPELL_TEMPLATES } from '../spell/spell.definitions';
 import { ENEMY_TEMPLATES } from '../character/character.definitions';
 import { FEATURE_TEMPLATES } from '../feature/feature.definitions';
 import { FormsModule } from '@angular/forms';
-import { applyCombatRatingCalculation } from '../character/rules/character.rules';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin',
-  imports: [FormsModule],
+  imports: [FormsModule, JsonPipe],
   templateUrl: './admin.html',
   styleUrl: './admin.css'
 })

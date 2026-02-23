@@ -22,7 +22,7 @@ export class Player {
     const currentRoom = this.mapService.currentRoom();
 
     if (currentPlayer && currentRoom?.coordinates) {
-      this.characterService.movePlayer(currentRoom.coordinates);
+      this.characterService.moveCharacter(currentRoom.coordinateKey);
     }
   }
 }

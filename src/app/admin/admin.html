@@ -45,15 +45,22 @@
                 <tr>
                     @for (column of currentColumns; track column) {
                     <td>
-                        <input type="text" class="input input-bordered input-xs w-full" [(ngModel)]="newData[column]" [name]="column">
+                        <input type="text" class="input input-bordered input-xs w-full" [(ngModel)]="newData[column]"
+                            [name]="column">
                     </td>
                     }
                 </tr>
                 @for (row of currentData; track $index) {
                 <tr>
                     @for (column of currentColumns; track column) {
-                    <td (click)="edit(row, $index)">{{ getValue(row, column) }}</td>
-                    }
+                    <td (click)="edit(row, $index)">
+                        @let value = getValue(row, column);
+                        @if (typeof value === 'object' && value !== null) {
+                        {{ value | json }}
+                        } @else {
+                        {{ value }}
+                        }
+                    </td> }
                 </tr>
                 }
             </tbody>

@@ -4,6 +4,7 @@ import { Direction } from './room/room.definitions';
 import { MapModel } from './map.model';
 import { MapFactory } from './map.factory';
 import { FeatureModel } from '../feature/feature.model';
+import { RoomModel } from './room/room.model';
 
 @Injectable({ providedIn: 'root' })
 export class MapService {
@@ -141,11 +142,25 @@ export class MapService {
 
       const nextRoom = this.currentRoom();
       if (nextRoom) {
-        nextRoom.visited = true;
         return [nextRoom.description, ...nextRoom.directions];
       }
     }
 
     return ["You cannot go that way."];
+  }
+
+  public updateRoom(coordinateKey: string, updates: Partial<RoomModel>): void {
+    this.currentMap.update(mapState => {
+      if (!mapState) return mapState;
+      const roomsRegistry = new Map(mapState.rooms);
+      const room = roomsRegistry.get(coordinateKey);
+
+      if (room) {
+        Object.assign(room, updates);
+        roomsRegistry.set(coordinateKey, room);
+      }
+
+      return { ...mapState, rooms: roomsRegistry };
+    });
   }
 }

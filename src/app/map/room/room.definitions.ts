@@ -254,7 +254,7 @@ export const ROOM_TEMPLATES: Partial<RoomModel>[] = [
     {
         typeid: 'town-ew-shops',
         description: 'A row of small storefronts. Smoke rises from a blacksmith’s chimney nearby.',
-        featureTypeids: ['feature-blacksmith-forge']
+        featureTypeids: []
     },
     {
         typeid: 'town-ns-road',

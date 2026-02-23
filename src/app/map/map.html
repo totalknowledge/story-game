@@ -18,7 +18,8 @@
             [class.map-cell--open-south]="cell.visible && !!cell.room?.connections?.get('south')"
             [class.map-cell--open-east]="cell.visible && !!cell.room?.connections?.get('east')"
             [class.map-cell--open-west]="cell.visible && !!cell.room?.connections?.get('west')"
-            [title]="cell.room?.typeid ?? ''">
+            [title]="cell.room?.typeid ?? ''"
+            (click)="log(cell)">
             @if (cell.isPlayer) {
             <span class="map-glyph">◉</span>
             }

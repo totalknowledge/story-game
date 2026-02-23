@@ -69,7 +69,7 @@ export class ItemModel {
             (0.05 * (this.heals ?? 0)) +
             (this.teaches.length * 5);
 
-        return Math.round(physicalPower + defensivePower + utilityPower) || 50;
+        return Math.ceil(physicalPower + defensivePower + utilityPower) || 50;
     }
 
     get cost(): number {

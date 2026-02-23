@@ -8,6 +8,7 @@ import { CombatEngineService } from './combat-engine.service';
 import { TargetingEngine } from './target-engine.service';
 import { TargetDeterminationScheme } from './game-engine.definitions';
 import { FeatureService } from '../feature/feature.service';
+import { d100 } from '../utilities/dice.definitions';
 
 @Injectable({
   providedIn: 'root',
@@ -124,8 +125,7 @@ export class InteractionEngineService {
       case 'SpellBook':
         if (item.teaches?.length) {
           item.teaches.forEach(spellName => {
-            actor.spells.push(this.spellFactory.createSpell(spellName));
-            interactionLog.push(`${actor.name} learns: ${spellName}.`);
+            interactionLog.push(...this.learnsSpell(actor, spellName));
           });
         }
         break;
@@ -159,6 +159,19 @@ export class InteractionEngineService {
     return effectMessages;
   }
 
+  private learnsSpell(actor: CharacterModel, spelltypeId: string): string[] {
+    let known = false;
+    const interactionLog = [];
+    actor.spells.forEach(spell => {
+      if (spell.typeid = spelltypeId) known = true;
+    });
+    if (!known) {
+      actor.spells.push(this.spellFactory.createSpell(spelltypeId));
+      interactionLog.push(`${actor.name} learns: ${spelltypeId}.`);
+    }
+    return interactionLog;
+  }
+
   private resolveScrollUsage(actor: CharacterModel, scroll: ItemModel): string[] {
     const scrollLog: string[] = [];
 
@@ -166,23 +179,37 @@ export class InteractionEngineService {
       return [`The ${scroll.name} is blank and does nothing.`];
     }
 
-    const spellToCast = scroll.teaches[0];
+    const spellTypeId = scroll.teaches[0];
 
     scrollLog.push(`${actor.name} unfurls the ${scroll.name}...`);
 
-    const scrollSpellEffect = { spellToCast, manaCost: 0 };
-    const spell = this.spellFactory.createSpell(scroll.name)
-    const targets = this.targetingEngine.resolveTargets({ actor, determinationScheme: spell.effect as TargetDeterminationScheme });
+    const spell = this.spellFactory.createSpell(spellTypeId);
 
-    const castResult = this.combatEngine.cast(actor, spell, targets.hostileTargets || [], targets.friendlyTargets || []);
+    if (!spell) {
+      return [`The magic within the ${scroll.name} sputters and dies.`];
+    }
+
+    const targetingResult = this.targetingEngine.resolveTargets({
+      actor,
+      determinationScheme: spell.effect as TargetDeterminationScheme
+    });
+
+    const castResult = this.combatEngine.cast(
+      actor,
+      spell,
+      targetingResult.hostileTargets || [],
+      targetingResult.friendlyTargets || []
+    );
+
     scrollLog.push(...castResult);
 
-    const masteryRoll = Math.floor(Math.random() * 100) + 1;
+    const masteryRoll = d100();
     const learningThreshold = 10;
-    const alreadyKnowsSpell = actor.spells.some(spell => spell.typeid === spell.typeid);
+
+    const alreadyKnowsSpell = actor.spells.some(existingSpell => existingSpell.typeid === spell.typeid);
 
     if (masteryRoll <= learningThreshold && !alreadyKnowsSpell) {
-      actor.spells.push(spellToCast);
+      this.learnsSpell(actor, spell.typeid)
       scrollLog.push(`Insight flashes in ${actor.name}'s mind! You have mastered ${spell.name}.`);
     }
 

@@ -1,4 +1,3 @@
-<!-- feature.component.html -->
 <div class="card bg-base-200 shadow-xl">
     <div class="card-body">
         <h2 class="card-title">{{ feature().name }}</h2>
@@ -11,7 +10,7 @@
             <div class="flex justify-between items-center bg-base-300 p-2 rounded">
                 <span>{{ item.name }}</span>
                 @if (feature().type === 'Store' && item) {
-                <span class="badge badge-primary">{{ item.cost }}c</span>
+                <span class="badge badge-primary">{{ formatMoney(item.cost) }}c</span>
                 }
             </div>
             }

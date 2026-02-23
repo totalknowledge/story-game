@@ -55,18 +55,18 @@ export class ConsoleService {
       case 'north': case 'south': case 'east': case 'west': case 'up': case 'down':
         output = this.engine.movePlayer(action);
         break;
-      case 'place':
+      case 'sell': case 'place':
         output = this.handlePlace(targetName);
         break;
       case 'search':
         output = this.handleSearch(targetName);
         output.push(...this.enemyDecision.processEnemyTurns());
         break;
-      case 'take':
+      case 'buy': case 'take':
         output = this.handleTake(targetName);
         break;
-      case 'use':
-        output = this.engine.use(this.characterService.getPlayer()()!, targetName);
+      case 'drink': case 'eat': case 'use':
+        output = this.engine.use(this.characterService.getPlayerEntity()!, targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
@@ -75,7 +75,7 @@ export class ConsoleService {
   }
 
   private handleAttack(targetName: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     const output: string[] = [];
     if (!player || player.isDead) {
       output.push('You are Dead and cannot attack.');
@@ -88,7 +88,7 @@ export class ConsoleService {
   }
 
   private handleCast(commandArguments: string): void {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) {
       this.log('You are Dead and cannot cast spells.');
       return;
@@ -116,16 +116,12 @@ export class ConsoleService {
       return;
     }
 
-    const potentialTarget = this.characterService.getActiveEnemies().find(enemy =>
-      enemy.name.toLowerCase().includes(targetNameInput.toLowerCase()) && !enemy.isDead
-    );
-
     const combatResults = this.engine.cast(player, selectedSpell, targetNameInput);
     combatResults.forEach(line => this.log(line));
   }
 
   private handleDrop(itemName: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) return ['You are dead and cannot drop items.'];
     if (!itemName) return ['Drop what?'];
 
@@ -141,7 +137,7 @@ export class ConsoleService {
   }
 
   private handleEquip(itemName: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) return ['You are dead and cannot change equipment.'];
     if (!itemName) return ['Equip what?'];
 
@@ -160,7 +156,7 @@ export class ConsoleService {
 }
 
   private handlePlace(input: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) return ['You are dead and cannot place items.'];
     if (!input) return ['Place what?'];
 
@@ -172,14 +168,14 @@ export class ConsoleService {
   }
 
   handleSearch(targetName: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) return ['You cannot search while dead.'];
 
     return this.engine.searchCorpse(player, targetName);
   }
 
   private handleTake(itemName: string): string[] {
-    const player = this.characterService.getPlayer()();
+    const player = this.characterService.getPlayerEntity();
     if (!player || player.isDead) return ['You are dead and cannot take items.'];
     if (!itemName) return ['Take what?'];
 

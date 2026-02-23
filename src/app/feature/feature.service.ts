@@ -7,7 +7,7 @@ import { CharacterService } from "../character/character.service";
 })
 export class FeatureService {
   private characterService = inject(CharacterService);
-  private readonly SELL_MULTIPLIER = 0.65;
+  private readonly SELL_MULTIPLIER = 0.61;
 
   public formatMoney(totalCopper: number): string {
     const gold = Math.floor(totalCopper / 100);
@@ -17,7 +17,7 @@ export class FeatureService {
     const parts = [];
     if (gold > 0) parts.push(`${gold}g`);
     if (silver > 0) parts.push(`${silver}s`);
-    if (copper > 0 || parts.length === 0) parts.push(`${copper}c`);
+    if (copper > 0) parts.push(`${copper}c`);
 
     return parts.join(' ');
   }

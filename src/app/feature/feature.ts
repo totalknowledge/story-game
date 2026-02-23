@@ -1,5 +1,6 @@
-import { Component, input, Signal } from '@angular/core';
+import { Component, inject, input, Signal } from '@angular/core';
 import { FeatureModel } from './feature.model';
+import { FeatureService } from './feature.service';
 
 @Component({
   selector: 'app-feature',
@@ -8,5 +9,10 @@ import { FeatureModel } from './feature.model';
   styleUrl: './feature.css',
 })
 export class Feature {
+  private featureService = inject(FeatureService);
   public feature = input.required<FeatureModel>();
+
+  public formatMoney(totalCopperAmount: number): string {
+    return this.featureService.formatMoney(totalCopperAmount);
+  }
 }

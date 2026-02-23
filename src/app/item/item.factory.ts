@@ -49,12 +49,32 @@ export class ItemFactory {
       return;
     }
 
-    const magicRoll = rollDice(1, 100);
+    let magicRoll = rollDice(1, 100);
+    item.quality ??= 'standard';
+    switch (item.quality) {
+      case 'damaged':
+        magicRoll += 90;
+        break;
+      case 'standard':
+        magicRoll += 9;
+        break;
+      case 'fine':
+        break;
+      case 'elite':
+        magicRoll -= 50;
+        break;
+      case 'magical':
+        magicRoll -= 90;
+        break;
+      default:
+        break;
+    }
     const isTypeMagic = (item.type === 'Weapon' || item.type === 'Armor') && magicRoll <= 10;
     const isTrinketMagic = item.type === 'Trinket' && magicRoll <= 95;
     const isForcedMagic = item.typeid.includes('magic');
 
     if (isTypeMagic || isTrinketMagic || isForcedMagic) {
+      item.quality = 'magical';
       this.mutateMagicalProperties(item);
     }
   }
@@ -64,6 +84,7 @@ export class ItemFactory {
 
     item.teaches = [spell.typeid];
     if (item.type === 'Scroll') {
+      item.quality = 'magical';
       item.name = `Scroll of ${spell.name}`;
     }
   }

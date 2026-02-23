@@ -12,7 +12,7 @@ export class CombatEngineService {
   private characterService = inject(CharacterService);
   private readonly MISS_THRESHOLD = 10;
   private readonly CRITICAL_THRESHOLD = 95;
-  private readonly MANA_EFFECT_MULTIPLIER = 0.35;
+  private readonly MANA_EFFECT_MULTIPLIER = 0.325;
   private readonly MANA_TOHIT_MULTIPLIER = 0.2;
   private readonly MANA_MISS_MULTIPLIER = 0.2;
 

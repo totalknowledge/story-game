@@ -96,6 +96,7 @@ export class GameEngineService {
       destinationRoom.features = roomHydration.features;
       this.characterService.loadRoomCharacters(destinationRoom.enemyIds, roomHydration.enemies);
 
+      this.rest(player);
       this.characterService.moveCharacter(destinationKey, player.id);
 
       if (!destinationRoom.visited) {

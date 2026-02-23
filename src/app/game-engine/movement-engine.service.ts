@@ -17,10 +17,10 @@ export class MovementEngineService {
   public processMovement(destinationRoom: any): {
     enemies: CharacterModel[];
     items: ItemModel[];
-    features: any[];
+    features: FeatureModel[];
   } {
     if (destinationRoom.visited) {
-      return { enemies: [], items: [], features: [] };
+      return { enemies: [], items: destinationRoom.items, features: destinationRoom.features };
     }
 
     return {

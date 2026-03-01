@@ -88,7 +88,6 @@ describe('MapFactory', () => {
   describe('Random Generation', () => {
     it('should grow a map to the specified target room count', () => {
       const map = factory.generateMap(mockRandomDefinition);
-      // It should attempt to reach 5 rooms based on the definition
       expect(map.rooms.size).toBeGreaterThanOrEqual(1);
       expect(map.rooms.size).toBeLessThanOrEqual(5);
     });
@@ -114,7 +113,6 @@ describe('MapFactory', () => {
   describe('Neighbor Logic', () => {
     it('should calculate the correct neighbor key based on offsets', () => {
       const coords = { x: 0, y: 0, z: 0 };
-      // Accessing private method for logic validation
       const key = (factory as any).calculateNeighborKey(coords, 'north');
       expect(key).toBe('0,1,0');
 

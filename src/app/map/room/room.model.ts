@@ -31,7 +31,11 @@ export class RoomModel {
     }
 
     public get directions(): string[] {
-        const exitKeys = Array.from(this.connections.keys());
+        console.log(this.connections);
+        const exitKeys = Array.from(this.connections.keys()).map(direction => {
+            const connection = this.connections.get(direction);
+            return connection?.status === 'locked' ? `${direction} (locked)` : direction;
+        });
 
         return exitKeys.length > 0
             ? [`Available directions: ${exitKeys.join(", ")}`]

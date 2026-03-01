@@ -99,7 +99,7 @@ export class CharacterService {
     const player = this.getPlayerEntity();
 
     if (player) {
-      roomMap.set(player.id, player);
+      roomMap.set(player.id!, player);
     }
 
     roomEnemyIds.forEach(id => {
@@ -110,8 +110,8 @@ export class CharacterService {
     });
 
     newlySpawned.forEach(spawnedEnemy => {
-      this.characterRegistry.set(spawnedEnemy.id, spawnedEnemy);
-      roomMap.set(spawnedEnemy.id, spawnedEnemy);
+      this.characterRegistry.set(spawnedEnemy.id!, spawnedEnemy);
+      roomMap.set(spawnedEnemy.id!, spawnedEnemy);
     });
 
     this.charactersInRoom.set(roomMap);
@@ -130,18 +130,18 @@ export class CharacterService {
     this.updateCharacter(character);
   }
 
-  public spawnCharacter(type = 'enemy', name?: string): CharacterModel {
-    const character = this.characterFactory.createCharacter(type, name);
+  public spawnCharacter(type = 'enemy', name?: string, targetCR?: number): CharacterModel {
+    const character = this.characterFactory.createCharacter(type, name, targetCR);
     this.registerCharacter(character, type === 'player');
     return character;
   }
 
   public updateCharacter(character: CharacterModel): void {
-    this.characterRegistry.set(character.id, character);
+    this.characterRegistry.set(character.id!, character);
 
     this.charactersInRoom.update(inRoomCharacters => {
       const updatedRegistry = new Map(inRoomCharacters);
-      updatedRegistry.set(character.id, character);
+      updatedRegistry.set(character.id!, character);
       return updatedRegistry;
     });
   }

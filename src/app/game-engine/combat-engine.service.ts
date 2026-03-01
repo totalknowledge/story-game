@@ -12,7 +12,7 @@ export class CombatEngineService {
   private characterService = inject(CharacterService);
   private readonly MISS_THRESHOLD = 10;
   private readonly CRITICAL_THRESHOLD = 95;
-  private readonly MANA_EFFECT_MULTIPLIER = 0.325;
+  private readonly MANA_EFFECT_MULTIPLIER = 0.245;
   private readonly MANA_TOHIT_MULTIPLIER = 0.2;
   private readonly MANA_MISS_MULTIPLIER = 0.2;
 
@@ -51,6 +51,7 @@ export class CombatEngineService {
 
   cast(caster: CharacterModel, spell: SpellModel, enemies: CharacterModel[], allies: CharacterModel[]): string[] {
     const combatLog: string[] = [];
+    const bonusEffect = Math.round((caster.maxMana ?? 0) * this.MANA_EFFECT_MULTIPLIER);
 
     caster.usedMana += spell.manaCost;
 
@@ -58,7 +59,7 @@ export class CombatEngineService {
     combatLog.push(castMessage);
 
     if (spell.effect === 'heal') {
-      const healAmount = spell.healsUser || 0;
+      const healAmount = rollDice(1, spell.healsUser || 0) + bonusEffect;
       caster.damage = Math.max(0, caster.damage - healAmount);
       combatLog.push(`${spell.name} restores ${healAmount} health to ${caster.name}!`);
     } else {
@@ -69,8 +70,15 @@ export class CombatEngineService {
       });
 
       if (spell.effect === 'area' && spell.healsUser) {
-        caster.damage = Math.max(0, caster.damage - spell.healsUser);
-        combatLog.push(`${spell.name} mends ${caster.name}'s wounds for ${spell.healsUser}!`);
+        const healAmount = rollDice(1, spell.healsUser) + bonusEffect;
+        caster.damage = Math.max(0, caster.damage - healAmount);
+        combatLog.push(`${spell.name} mends ${caster.name}'s wounds for ${healAmount}!`);
+      }
+
+      if (spell.effect === 'vampiric' && spell.healsUser) {
+        const healAmount = rollDice(1, spell.healsUser) + bonusEffect;
+        caster.damage = Math.max(0, caster.damage - healAmount);
+        combatLog.push(`${spell.name} siphons life from the enemies, mending ${caster.name}'s wounds for ${healAmount}!`);
       }
     }
 
@@ -122,7 +130,7 @@ export class CombatEngineService {
 
     const isCritical = this.isCrit(spellHitRoll, spellModifiedRoll);
 
-    let damageDealt = spell.damage + bonusDamage;
+    let damageDealt = rollDice(1, spell.damage) + bonusDamage;
     if (isSecondary) damageDealt = damageDealt / 2;
     if (isCritical) damageDealt = damageDealt * 1.5;
 

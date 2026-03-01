@@ -27,9 +27,7 @@ describe('RoomModel', () => {
   it('should return available directions from the unified connections map', () => {
     const room = new RoomModel(roomData);
 
-    // Internal connection
     room.connections.set('north', { connection: '0,1,0' });
-    // External connection (Map transition)
     room.connections.set('east', { connection: '0,0,0', loads: 'town-square', name: 'Town' });
 
     const directionsMessage = room.directions[0];
@@ -48,7 +46,6 @@ describe('RoomModel', () => {
     expect(template.typeid).toBe('test-room');
     expect(template.description).toBe('A damp cavern.');
     expect(template.featureTypeids).toContain('altar-01');
-    // Ensure stateful properties are NOT in the template
     expect((template as any).id).toBeUndefined();
     expect((template as any).visited).toBeUndefined();
   });

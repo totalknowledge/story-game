@@ -20,8 +20,15 @@ export class ItemFactory {
     return this.createItemFromTemplate(itemTemplate);
   }
 
-  createRandomItem(includeTypes?: string[], excludeTypes: string[] = ['Natural']): ItemModel {
+  createRandomItem(includeTypes?: string[], CRTarget: number = 9, excludeTypes: string[] = ['Natural']): ItemModel {
     let itemPool = ITEM_TEMPLATES;
+    if (CRTarget < 10) {
+        itemPool = itemPool.filter(itemTemplate => ['damaged', 'standard'].includes(itemTemplate.quality ?? 'standard'))
+    } else if (CRTarget < 20) {
+        itemPool = itemPool.filter(itemTemplate => ['damaged', 'standard', 'fine'].includes(itemTemplate.quality ?? 'standard'))
+    } else if (CRTarget < 30) {
+        itemPool = itemPool.filter(itemTemplate => ['standard', 'fine', 'elite'].includes(itemTemplate.quality ?? 'standard'))
+    }
 
     if (includeTypes && includeTypes.length > 0) {
       itemPool = itemPool.filter(t => includeTypes.includes(t.type));
@@ -80,10 +87,20 @@ export class ItemFactory {
   }
 
   private applyRandomSpell(item: ItemModel): void {
-    const spell = this.spellFactory.getRandomSpell();
-
-    item.teaches = [spell.typeid];
-    if (item.type === 'Scroll') {
+    if (item.type === 'SpellBook') {
+      const spellCount = rollDice(2, 2);
+      const spellSet = new Set<string>();
+      
+      while (spellSet.size < spellCount) {
+        const spell = this.spellFactory.getRandomSpell();
+        spellSet.add(spell.typeid);
+      }
+      
+      item.teaches = Array.from(spellSet);
+      item.quality = 'magical';
+    } else {
+      const spell = this.spellFactory.getRandomSpell();
+      item.teaches = [spell.typeid];
       item.quality = 'magical';
       item.name = `Scroll of ${spell.name}`;
     }

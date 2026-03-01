@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, inject, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConsoleService } from './console.service';
@@ -10,10 +10,18 @@ import { ConsoleService } from './console.service';
   styleUrl: './console.css'
 })
 export class ConsoleComponent implements AfterViewChecked {
-  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   public consoleService = inject(ConsoleService);
   public currentInput = '';
+  private channel = new BroadcastChannel('story-game');
+
+  constructor() {
+    this.channel.addEventListener('message', e => {
+      if (e.data === 'focus-console') {
+        this.focusInput();
+      }
+    });
+  }
 
   submit() {
     const input = this.currentInput.trim();
@@ -23,13 +31,19 @@ export class ConsoleComponent implements AfterViewChecked {
     }
   }
 
+  private focusInput(): void {
+    const el = document.getElementById('console-input') as HTMLElement | null;
+    if (el) el.focus();
+  }
+
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
 
   private scrollToBottom(): void {
-    try {
-      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    } catch (err) { }
+    const el = document.getElementById('scroll-container');
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
   }
 }

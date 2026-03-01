@@ -72,7 +72,8 @@
                     @let equippedItem = character().equipment.get(slot.key);
 
                     <app-tooltip [entry]="equippedItem" direction="right">
-                        <div class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
+                        <div (click)="log(equippedItem)"
+                            class="text-[10px] bg-base-300 p-1 rounded px-1 flex justify-between cursor-help">
                             <span class="opacity-60">{{ slot.label }}:</span>
                             <span class="truncate font-medium ml-1">
                                 {{ equippedItem?.name || '---' }}
@@ -98,7 +99,7 @@
                         <div class="flex flex-col gap-1">
                             @for (spell of character().spells; track spell.typeid) {
                             <app-tooltip [entry]="spell" direction="top" widthClass="w-64">
-                                <div
+                                <div (click)="log(spell)"
                                     class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
                                     {{ spell.name }}
                                 </div>
@@ -118,7 +119,7 @@
                     <div class="flex flex-col gap-1">
                         @for (inventoryItem of character().items; track inventoryItem.id) {
                         <app-tooltip [entry]="inventoryItem" direction="right">
-                            <div
+                            <div (click)="log(inventoryItem)"
                                 class="badge badge-neutral text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
                                 {{ inventoryItem.name }}
                             </div>
@@ -134,7 +135,7 @@
                     <div class="flex flex-col gap-1">
                         @for (spell of character().spells; track spell.typeid) {
                         <app-tooltip [entry]="spell" direction="right">
-                            <div
+                            <div (click)="log(spell)"
                                 class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
                                 {{ spell.name }}
                             </div>
@@ -148,7 +149,7 @@
             }
         </div>
 
-        <div class="text-[10px] opacity-50 mt-2 flex justify-between">
+        <div class="text-[12px] opacity-50 mt-2 flex justify-between">
             @if (isPlayer()) {
             <span>💰 {{ character().money.copper }}c {{ character().money.silver }}s {{ character().money.gold
                 }}g</span>

@@ -14,7 +14,7 @@ export class MovementEngineService {
   private readonly itemFactory = inject(ItemFactory);
   private readonly featureFactory = inject(FeatureFactory);
 
-  public processMovement(destinationRoom: any): {
+  public processMovement(destinationRoom: any, targetCR?: number): {
     enemies: CharacterModel[];
     items: ItemModel[];
     features: FeatureModel[];
@@ -26,18 +26,18 @@ export class MovementEngineService {
     return {
       items: this.hydrateItems(destinationRoom),
       features: this.hydrateFeatures(destinationRoom),
-      enemies: this.generateInitialEnemies(destinationRoom)
+      enemies: this.generateInitialEnemies(destinationRoom, targetCR)
     };
   }
 
-  private generateInitialEnemies(room: any): CharacterModel[] {
+  private generateInitialEnemies(room: any, targetCR?: number): CharacterModel[] {
     const roomEnemies: CharacterModel[] = [];
     const roomEnemyTypeIds = room.enemyTypeids ? Array.from(room.enemyTypeids) : [];
 
     if (roomEnemyTypeIds.length === 0) return roomEnemies;
 
     roomEnemyTypeIds.forEach((typeId: any) => {
-      const generatedEnemy = this.characterFactory.createCharacter(typeId);
+      const generatedEnemy = this.characterFactory.createCharacter(typeId, undefined, targetCR);
       roomEnemies.push(generatedEnemy);
     });
 

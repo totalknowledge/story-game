@@ -4,6 +4,7 @@ export const CONSUMABLES = [
         "name": "Minor Health Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "heals": 5,
         "useMessages": [
             "{user} drinks {item} and recovers {value} health."
@@ -14,6 +15,7 @@ export const CONSUMABLES = [
         "name": "Health Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "fine",
         "heals": 15,
         "useMessages": [
             "{user} drinks {item} and recovers {value} health."
@@ -24,6 +26,7 @@ export const CONSUMABLES = [
         "name": "Major Health Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "elite",
         "heals": 35,
         "useMessages": [
             "{user} drinks {item} and recovers {value} health."
@@ -34,6 +37,7 @@ export const CONSUMABLES = [
         "name": "Minor Mana Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "restores": 5,
         "useMessages": [
             "{user} drinks {item} and restores {value} mana."
@@ -44,6 +48,7 @@ export const CONSUMABLES = [
         "name": "Mana Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "fine",
         "restores": 15,
         "useMessages": [
             "{user} drinks {item} and restores {value} mana."
@@ -54,6 +59,7 @@ export const CONSUMABLES = [
         "name": "Major Mana Potion",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "elite",
         "restores": 35,
         "useMessages": [
             "{user} drinks {item} and restores {value} mana."
@@ -64,6 +70,7 @@ export const CONSUMABLES = [
         "name": "Loaf of Bread",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "heals": 4,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
@@ -74,6 +81,7 @@ export const CONSUMABLES = [
         "name": "Cheese Wheel",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "heals": 4,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
@@ -84,6 +92,7 @@ export const CONSUMABLES = [
         "name": "Shiny Apple",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "heals": 3,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
@@ -94,9 +103,32 @@ export const CONSUMABLES = [
         "name": "Cooked Meat",
         "type": "Consumable",
         "equippableLocation": "none",
+        "quality": "standard",
         "heals": 6,
         "useMessages": [
             "{user} eats {item} and recovers {value} health."
+        ]
+    },
+    {
+        "typeid": "beverage-ale",
+        "name": "Ale",
+        "type": "Consumable",
+        "equippableLocation": "none",
+        "quality": "standard",
+        "restores": 2,
+        "useMessages": [
+            "{user} drinks {item} and recovers {value} mana."
+        ]
+    },
+    {
+        "typeid": "beverage-mead",
+        "name": "Mead",
+        "type": "Consumable",
+        "equippableLocation": "none",
+        "quality": "standard",
+        "restors": 3,
+        "useMessages": [
+            "{user} drinks {item} and recovers {value} mana."
         ]
     }
 ]

@@ -62,7 +62,7 @@ export class InteractionEngineService {
     const transactionResult = this.featureService.processTake(player, itemInFeature, feature);
     if (!transactionResult.allowed) return [transactionResult.message!];
 
-    const inventoryAcquired = this.characterService.acquireItem(player.id, [itemInFeature]);
+    const inventoryAcquired = this.characterService.acquireItem(player.id!, [itemInFeature]);
     if (!inventoryAcquired) return ['Your inventory is full.'];
 
     feature.items = feature.items.filter((targetItem: any) => targetItem.id !== itemInFeature.id);
@@ -72,13 +72,13 @@ export class InteractionEngineService {
     return [`You ${confirmationVerb} ${itemInFeature.name} from the ${feature.name}.`];
   }
 
-  public use(actor: CharacterModel, targetName: string): string[] {
+  public use(actor: CharacterModel, targetName: string, charactersInRoom: CharacterModel[] = []): string[] {
     const inventoryItem = actor.items.find(item =>
       item.name.toLowerCase().includes(targetName.toLowerCase())
     );
 
     if (inventoryItem) {
-      return this.resolveItemUsage(actor, inventoryItem);
+      return this.resolveItemUsage(actor, inventoryItem, charactersInRoom);
     }
 
     const currentRoom = this.mapService.currentRoom();
@@ -100,7 +100,7 @@ export class InteractionEngineService {
     return [`You don't have or see a "${targetName}" to use.`];
   }
 
-  private resolveItemUsage(actor: CharacterModel, item: ItemModel): string[] {
+  private resolveItemUsage(actor: CharacterModel, item: ItemModel, charactersInRoom: CharacterModel[] = []): string[] {
     const interactionLog: string[] = [];
 
     switch (item.type) {
@@ -113,12 +113,12 @@ export class InteractionEngineService {
       case 'Weapon':
       case 'Trinket':
       case 'Utility':
-        const equipSuccess = this.characterService.equipItem(actor.id, item);
+        const equipSuccess = this.characterService.equipItem(actor.id!, item);
         interactionLog.push(equipSuccess ? `You equipped ${item.name}.` : `You cannot equip ${item.name}.`);
         break;
 
       case 'Scroll':
-        interactionLog.push(...this.resolveScrollUsage(actor, item));
+        interactionLog.push(...this.resolveScrollUsage(actor, item, charactersInRoom));
         this.removeItemFromActor(actor, item);
         break;
 
@@ -163,7 +163,7 @@ export class InteractionEngineService {
     let known = false;
     const interactionLog = [];
     actor.spells.forEach(spell => {
-      if (spell.typeid = spelltypeId) known = true;
+      if (spell.typeid === spelltypeId) known = true;
     });
     if (!known) {
       actor.spells.push(this.spellFactory.createSpell(spelltypeId));
@@ -172,7 +172,7 @@ export class InteractionEngineService {
     return interactionLog;
   }
 
-  private resolveScrollUsage(actor: CharacterModel, scroll: ItemModel): string[] {
+  private resolveScrollUsage(actor: CharacterModel, scroll: ItemModel, charactersInRoom: CharacterModel[] = []): string[] {
     const scrollLog: string[] = [];
 
     if (!scroll.teaches || scroll.teaches.length === 0) {
@@ -189,8 +189,11 @@ export class InteractionEngineService {
       return [`The magic within the ${scroll.name} sputters and dies.`];
     }
 
+    spell.manaCost = 0;
+
     const targetingResult = this.targetingEngine.resolveTargets({
       actor,
+      charactersInRoom,
       determinationScheme: spell.effect as TargetDeterminationScheme
     });
 

@@ -1,7 +1,8 @@
+import { ItemModel } from "../item/item.model";
 import { CharacterClassification, Money } from "./character.definitions";
 
 export class CharacterModel {
-    id: string;
+    id?: string;
     typeid: string;
     type: string = 'Beast';
     name: string;
@@ -16,13 +17,15 @@ export class CharacterModel {
     armor?: number;
     damage: number = 0;
     usedMana: number = 0;
-    private goldSilverCopper: Money = { copper: 0, silver: 0, gold: 0 };
     items: any[] = [];
     equipment = new Map<string, any>();
+    equippedItemTemplate?: Partial<ItemModel>[];
     spells: any[] = [];
+    spellTypeids?: string[];
     dead: boolean = false;
     roomCoordinatesKey: string = '0,0,0';
     combatRating?: number;
+    private goldSilverCopper: Money = { copper: 0, silver: 0, gold: 0 };
 
     constructor(name: string, baseHealth: number, baseMana: number, template: any = {}) {
         this.name = name;

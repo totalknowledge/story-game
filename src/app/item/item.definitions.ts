@@ -5,28 +5,21 @@ import { WEAPONS } from "./item.definitions.weapons";
 export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'legs' | 'feet' | 'neck' | 'none';
 
 export const ITEM_TEMPLATES = [
-    // Consumables
     ...CONSUMABLES,
-
-    // Weapons
     ...WEAPONS,
-
-    // Ammo
     {
         "typeid": "ammo-arrows",
         "name": "Arrow",
         "type": "Ammo",
         "equippableLocation": "right-hand",
+        "quality": "standard",
         "damage": 6,
         "quantity": 20,
         "useMessages": [
             "{user} uses {item} to attack."
         ]
     },
-
     ...ARMOR,
-
-    // Misc
     {
         "typeid": "trinket-ring",
         "name": "Ring",
@@ -42,6 +35,7 @@ export const ITEM_TEMPLATES = [
         "name": "Amulet",
         "type": "Trinket",
         "equippableLocation": "neck",
+        "quality": "elite",
         "useMessages": [
             "{user} wears {item}. A faint aura surrounds them."
         ]
@@ -51,6 +45,7 @@ export const ITEM_TEMPLATES = [
         "name": "Lucky Charm",
         "type": "Trinket",
         "equippableLocation": "neck",
+        "quality": "elite",
         "bonusHealth": 5,
         "bonusMana": 5,
         "useMessages": [
@@ -62,6 +57,8 @@ export const ITEM_TEMPLATES = [
         "name": "Torch",
         "type": "Utility",
         "equippableLocation": "left-hand",
+        "quality": "standard",
+        "plusArmor": 1,
         "useMessages": [
             "{user} lights {item}. Shadows retreat slightly."
         ]
@@ -71,6 +68,7 @@ export const ITEM_TEMPLATES = [
         "name": "Scroll",
         "type": "Scroll",
         "equippableLocation": "none",
+        "quality": "magical",
         "useMessages": [
             "{user} learns {spell}"
         ],
@@ -81,6 +79,7 @@ export const ITEM_TEMPLATES = [
         "name": "Spell Book",
         "type": "SpellBook",
         "equippableLocation": "none",
+        "quality": "magical",
         "useMessages": [
             "{user} learns {spell}"
         ],

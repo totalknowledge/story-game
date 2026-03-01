@@ -25,7 +25,7 @@ export class SpellFactory {
 
   getRandomSpell(manaCap?: number): SpellModel {
     const templates = manaCap ? 
-      SPELL_TEMPLATES.filter(template => template.manaCost <= manaCap) :
+      SPELL_TEMPLATES.filter(template => (template.manaCost ?? 99) <= manaCap) :
       SPELL_TEMPLATES;
     const randomSpell = pickRandom(templates);
     return new SpellModel(randomSpell);

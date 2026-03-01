@@ -15,7 +15,7 @@ export class CharacterFactory {
   private spellFactory = inject(SpellFactory);
   private nameService = inject(NameService);
 
-  createCharacter(type = 'enemy', name?: string): CharacterModel {
+  createCharacter(type = 'enemy', name?: string, targetCR?: number): CharacterModel {
     const characterTemplate = this.buildTemplate(type, name);
     const character = new CharacterModel(
       characterTemplate.name,
@@ -25,7 +25,8 @@ export class CharacterFactory {
     );
 
     this.seedSpells(character, characterTemplate);
-    equipCharacter(character, this.itemFactory, characterTemplate);
+    const crTarget = type === 'player' ? 9 : (targetCR ?? 9);
+    equipCharacter(character, crTarget, this.itemFactory, characterTemplate);
 
     return character;
   }
@@ -38,7 +39,7 @@ export class CharacterFactory {
     if (type === 'player') {
       return {
         name: characterName,
-        baseHealth: 25,
+        baseHealth: 20,
         baseMana: 10,
         typeid: 'player'
       };
@@ -48,7 +49,7 @@ export class CharacterFactory {
     const classification = classifyCheck <= 1 ? 'unique' : classifyCheck <= 10 ? 'elite' : 'normal';
 
     const filteredTemplates = ENEMY_TEMPLATES.filter(template =>
-      template.typeid.startsWith(type)
+      template.typeid?.startsWith(type)
     );
     const templates = filteredTemplates.length > 0 ? filteredTemplates : ENEMY_TEMPLATES;
     let characterTemplate = pickRandom(templates);

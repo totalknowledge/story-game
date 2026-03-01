@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 })
 export class Header {
   characterService = inject(CharacterService);
+  private channel = new BroadcastChannel('story-game');
 
   constructor() {
     this.resetGame();
@@ -17,5 +18,9 @@ export class Header {
 
   resetGame() {
     this.characterService.spawnCharacter('player');
+  }
+
+  focusConsole() {
+    this.channel.postMessage('focus-console');
   }
 }

@@ -16,7 +16,8 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
         generator: 'random',
         features: 1,
         featureTypes: [],
-        targetCR: 20,
+        targetCR: 9,
+        encounterChance: 15,
         enemyTypes: [
             'enemy-rat',
             'enemy-bat',
@@ -24,7 +25,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             'enemy-spider-small',
             'enemy-wolf'
         ],
-        rooms: 10,
+        rooms: 15,
         randomRooms: [
             'cave-001'
         ],
@@ -38,10 +39,43 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             }
         }
     },
+    'crypts-01': {
+        type: 'dungeon',
+        name: 'The Catacombs',
+        generator: 'random',
+        features: 1,
+        featureTypes: [],
+        targetCR: 19,
+        encounterChance: 20,
+        enemyTypes: [
+            'enemy-humanoid-skeleton',
+            'enemy-humanoid-zombie',
+            'enemy-spider-giant'
+        ],
+        rooms: 30,
+        randomRooms: [
+            'cave-001'
+        ],
+        structure: {
+            '0,0,0': {
+                room: 'cave-entrance',
+                commections: ['north'],
+                mapConnections: [
+                    { direction: 'north', connection: '', name: 'Althea', loads: 'town', status: 'unlocked' }
+                ]
+            }
+        }
+    },
     'town': {
         type: 'town',
         name: 'Althea',
         generator: 'static',
+        targetCR: 14,
+        encounterChance: 5,
+        enemyTypes: [
+            'enemy-humanoid-bandit',
+            'enemy-humanoid-bandit-leader'
+        ],
         structure: {
             '0,0,0': {
                 room: 'town-square',
@@ -74,7 +108,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
                 room: 'town-ns-road',
                 connections: ['north', 'south'],
                 mapConnections: [
-                    { connection: 'north', name: 'The Sphinx', loads: 'caves-02', status: 'locked' }
+                    { direction: 'north', connection: '', name: 'The Sphinx', loads: 'caves-02', status: 'locked' }
                 ]
             },
             '-1,1,0': {
@@ -90,7 +124,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             '-2,0,0': {
                 room: 'town-ew-road',
                 connections: ['east', 'west'],
-                mapConnections: [{ connection: 'west', name: 'Beyond the Gate', loads: 'valley-01', status: 'locked' }]
+                mapConnections: [{ direction: 'west', connection: '', name: 'Beyond the Gate', loads: 'valley-01', status: 'locked' }]
             },
             '0,-1,0': {
                 room: 'town-ew-shops',
@@ -100,7 +134,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             '0,-2,0': {
                 room: 'town-ns-road',
                 connections: ['north', 'south'],
-                mapConnections: [{ connection: 'south', name: 'The Catacombs', loads: 'crypt-01', status: 'locked' }]
+                mapConnections: [{ direction: 'south', connection: '', name: 'The Catacombs', loads: 'crypts-01', status: 'unlocked' }]
             },
             '-1,-1,0': {
                 room: 'town-empty-shops',

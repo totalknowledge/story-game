@@ -16,7 +16,9 @@ export class MapFactory {
     const map = new MapModel({
       name: mapDefinition['name'] || 'Unknown Region',
       type: mapDefinition['type'],
-      isPersistent: mapDefinition['isPersistent']
+      isPersistent: mapDefinition['isPersistent'],
+      targetCR: mapDefinition['targetCR'],
+      encounterChance: mapDefinition['encounterChance']
     });
 
     if (mapDefinition['generator'] === 'random') {
@@ -52,7 +54,6 @@ export class MapFactory {
 
       if (template) {
         const room = this.roomFactory.generateRoom(template, { coordinateKey: roomCoordinates });
-        room.enemyTypeids = this.generateEnemyTypeIds(mapDefinition);
 
         if (roomConfiguration.mapConnections) {
           roomConfiguration.mapConnections.forEach((externalEntry: any) => {

@@ -12,10 +12,4 @@ import { rollDice } from '../utilities/dice.definitions';
 export class Enemies {
   private characterService = inject(CharacterService);
   public enemies = this.characterService.enemiesInRoom();
-
-  constructor() {
-    for (let i = 1; i < rollDice(1, 3); i++) {
-      this.characterService.spawnCharacter('enemy-humanoid-bandit');
-    }
-  }
 }

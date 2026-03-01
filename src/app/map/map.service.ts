@@ -163,4 +163,13 @@ export class MapService {
       return { ...mapState, rooms: roomsRegistry };
     });
   }
+
+  public resetMap(mapName: string): string[] {
+    this.maps.delete(mapName);
+    const currentMapName = Array.from(this.maps.entries()).find(([_, m]) => m === this.currentMap())?.[0];
+    if (currentMapName === mapName) {
+      this.loadMap(mapName, '0,0,0');
+    }
+    return [`The ${mapName} has been reset.`];
+  }
 }

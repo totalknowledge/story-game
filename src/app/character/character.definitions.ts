@@ -1,3 +1,5 @@
+import { CharacterModel } from "./character.model";
+
 export type CharacterType = 'Player' | 'Enemy';
 
 export type CharacterClassification = 'normal' | 'elite' | 'unique';
@@ -13,25 +15,31 @@ export const EQUPEMENT_SLOTS = [
     { label: 'Right\u00A0Hand', key: 'right-hand' },
     { label: 'Neck', key: 'neck' },
     { label: 'Left\u00A0Hand', key: 'left-hand' },
-    { label: 'Chest', key: 'body' },
+    { label: 'body', key: 'body' },
     { label: 'Ring', key: 'left-finger' },
     { label: 'Legs', key: 'legs' },
     { label: 'Feet', key: 'feet' }
 ];
 
-export const ENEMY_TEMPLATES = [
+export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
     {
         "typeid": "enemy-rat",
         "name": "Giant Rat",
-        "baseHealth": 5,
+        "baseHealth": 6,
         "baseMana": 0,
         "equippedItemTemplate": [{
             "typeid": "natural-bite",
             "name": "Bite",
             "type": "Natural",
-            "damage": 4,
+            "damage": 6,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "type": "Beast",
         "combatRating": 3
@@ -39,7 +47,7 @@ export const ENEMY_TEMPLATES = [
     {
         "typeid": "enemy-bat",
         "name": "Cave Bat",
-        "baseHealth": 4,
+        "baseHealth": 6,
         "baseMana": 0,
         "equippedItemTemplate": [{
             "typeid": "natural-bite",
@@ -48,6 +56,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 4,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "type": "Beast",
         "combatRating": 2
@@ -55,7 +69,7 @@ export const ENEMY_TEMPLATES = [
     {
         "typeid": "enemy-slime-green",
         "name": "Green Slime",
-        "baseHealth": 6,
+        "baseHealth": 8,
         "baseMana": 0,
         "equippedItemTemplate": [{
             "typeid": "natural-acid",
@@ -65,7 +79,7 @@ export const ENEMY_TEMPLATES = [
             "resilience": 999,
             "equippableLocation": "right-hand"
         }],
-        "type": "Beast",
+        "type": "Slime",
         "combatRating": 3
     },
     {
@@ -144,6 +158,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 6,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "type": "Beast",
         "combatRating": 4
@@ -160,6 +180,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 3,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-carapace",
+            "name": "Carapace",
+            "type": "Natural",
+            "plusArmor": 3,
+            "equippableLocation": "body"
         }],
         "type": "Beast",
         "combatRating": 2
@@ -176,6 +202,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 5,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-carapace",
+            "name": "Carapace",
+            "type": "Natural",
+            "plusArmor": 3,
+            "equippableLocation": "body"
         }],
         "type": "Beast",
         "combatRating": 4
@@ -242,6 +274,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 6,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [
             "spell-fireball"
@@ -261,6 +299,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 6,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [],
         "type": "Beast",
@@ -337,6 +381,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 6,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [],
         "type": "Beast",
@@ -370,6 +420,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 9,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [],
         "type": "Beast",
@@ -387,6 +443,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 12,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [],
         "type": "Beast",
@@ -404,6 +466,12 @@ export const ENEMY_TEMPLATES = [
             "damage": 10,
             "resilience": 999,
             "equippableLocation": "right-hand"
+        }, {
+            "typeid": "natural-hide",
+            "name": "Hide",
+            "type": "Natural",
+            "plusArmor": 5,
+            "equippableLocation": "body"
         }],
         "spellTypeids": [],
         "type": "Beast",

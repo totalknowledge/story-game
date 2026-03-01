@@ -30,7 +30,15 @@ export class ConsoleService {
 
     switch (action) {
       case 'help':
-        output = ['Commands: north, south, east, west, look, search, equip [item], attack [enemy]'];
+        output = [
+          'Available Commands:',
+          '  Movement: north, south, east, west, up, down',
+          '  Exploration: look, search [target], close, rest, revive',
+          '  Combat: attack [enemy], cast [spell] [target]',
+          '  Inventory: equip [item], drop [item], take [item], buy [item]',
+          '  Items: drink [item], eat [item], use [item], place [item] in [feature], sell [item]',
+          '  Admin: reset [map]'
+        ];
         break;
       case 'attack':
         output = this.handleAttack(targetName);
@@ -66,7 +74,20 @@ export class ConsoleService {
         output = this.handleTake(targetName);
         break;
       case 'drink': case 'eat': case 'use':
-        output = this.engine.use(this.characterService.getPlayerEntity()!, targetName);
+        const playerEntity = this.characterService.getPlayerEntity();
+        output = playerEntity ? this.engine.use(playerEntity.id!, targetName) : ['You do not exist.'];
+        output.push(...this.enemyDecision.processEnemyTurns());
+        break;
+      case 'rest':
+        output = this.handleRest();
+        output.push(...this.enemyDecision.processEnemyTurns());
+        break;
+      case 'revive':
+        output = this.handleRevive();
+        output.push(...this.enemyDecision.processEnemyTurns());
+        break;
+      case 'reset':
+        output = this.handleReset(targetName);
         break;
       default:
         this.log(`Unknown command: ${action}`);
@@ -82,7 +103,7 @@ export class ConsoleService {
       return output;
     }
 
-    const combatResults = this.engine.attack(player, targetName);
+    const combatResults = this.engine.attack(player.id!, targetName);
     combatResults.forEach(result => output.push(result));
     return output;
   }
@@ -116,7 +137,7 @@ export class ConsoleService {
       return;
     }
 
-    const combatResults = this.engine.cast(player, selectedSpell, targetNameInput);
+    const combatResults = this.engine.cast(player.id!, selectedSpell, targetNameInput);
     combatResults.forEach(line => this.log(line));
   }
 
@@ -125,15 +146,29 @@ export class ConsoleService {
     if (!player || player.isDead) return ['You are dead and cannot drop items.'];
     if (!itemName) return ['Drop what?'];
 
-    const itemToDrop = player.items.find(inventoryItem =>
+    let itemToDrop = player.items.find(inventoryItem =>
       inventoryItem.name.toLowerCase().includes(itemName.toLowerCase())
     );
+    let unequipMessage: string | null = null;
 
     if (!itemToDrop) {
-      return [`You are not carrying a "${itemName}".`];
+      for (const [slot, equipped] of player.equipment.entries()) {
+        if (equipped && equipped.name.toLowerCase().includes(itemName.toLowerCase())) {
+          itemToDrop = equipped;
+          unequipMessage = `You unequip the ${equipped.name}.`;
+          break;
+        }
+      }
+
+      if (!itemToDrop) {
+        return [`You are not carrying a "${itemName}".`];
+      }
     }
 
-    return this.engine.drop(player, itemToDrop);
+    const messages: string[] = [];
+    if (unequipMessage) messages.push(unequipMessage);
+    messages.push(...this.engine.drop(player, itemToDrop));
+    return messages;
   }
 
   private handleEquip(itemName: string): string[] {
@@ -148,8 +183,8 @@ export class ConsoleService {
     if (!itemToEquip) {
         return [`You are not carrying a "${itemName}".`];
     }
-    const equipMessages = this.characterService.equipItem(player.id, itemToEquip);
-    player.items = player.items.filter(inventoryItem => inventoryItem.id !== itemToEquip.id);
+    const equipMessages = this.characterService.equipItem(player.id!, itemToEquip);
+    player.items = player.items.filter(inventoryItem => inventoryItem.id! !== itemToEquip.id!);
     this.characterService.updateCharacter(player);
 
     return equipMessages;
@@ -180,5 +215,24 @@ export class ConsoleService {
     if (!itemName) return ['Take what?'];
 
     return this.engine.take(player, itemName);
+  }
+
+  private handleRest(): string[] {
+    const player = this.characterService.getPlayerEntity();
+    if (!player || player.isDead) return ['You are dead and cannot rest.'];
+
+    return this.engine.rest(player);
+  }
+
+  private handleRevive(): string[] {
+    const player = this.characterService.getPlayerEntity();
+    if (!player) return ['No player exists to revive.'];
+
+    return this.engine.revive(player);
+  }
+
+  private handleReset(mapName: string): string[] {
+    if (!mapName) return ['Reset what?'];
+    return this.mapService.resetMap(mapName);
   }
 }

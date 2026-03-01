@@ -1,10 +1,12 @@
-export const SPELL_TEMPLATES = [
+import { SpellModel } from "./spell.model";
+
+export const SPELL_TEMPLATES: Partial<SpellModel>[] = [
     {
         "typeid": "spell-fireball",
         "name": "Fireball",
         "effect": "single-target",
         "damage": 9,
-        "manaCost": 3,
+        "manaCost": 4,
         "school": "Fire",
         "castMessages": [
             "{user} hurls a blazing sphere of fire!"
@@ -15,7 +17,7 @@ export const SPELL_TEMPLATES = [
         "name": "MagicMissile",
         "effect": "additional-target",
         "damage": 2,
-        "manaCost": 1,
+        "manaCost": 2,
         "school": "Arcane",
         "castMessages": [
             "Three darts of glowing blue energy streak toward the target."
@@ -26,7 +28,7 @@ export const SPELL_TEMPLATES = [
         "name": "LesserHeal",
         "effect": "heal",
         "healsUser": 9,
-        "manaCost": 3,
+        "manaCost": 4,
         "school": "Holy",
         "castMessages": [
             "A soft, golden light envelops {user}."
@@ -37,7 +39,7 @@ export const SPELL_TEMPLATES = [
         "name": "IceSpike",
         "effect": "single-target",
         "damage": 8,
-        "manaCost": 4,
+        "manaCost": 5,
         "school": "Frost",
         "castMessages": [
             "A jagged shard of ice forms in the air and launches forward."
@@ -48,7 +50,7 @@ export const SPELL_TEMPLATES = [
         "name": "ThunderClap",
         "effect": "area",
         "damage": 6,
-        "manaCost": 9,
+        "manaCost": 10,
         "school": "Storm",
         "castMessages": [
             "The air booms with a deafening crack of thunder!"
@@ -59,8 +61,8 @@ export const SPELL_TEMPLATES = [
         "name": "DrainLife",
         "effect": "vampiric",
         "damage": 5,
-        "healsUser": 1,
-        "manaCost": 2,
+        "healsUser": 2,
+        "manaCost": 3,
         "school": "Necromancy",
         "castMessages": [
             "A dark, wispy tendril siphons energy from the target."
@@ -71,7 +73,7 @@ export const SPELL_TEMPLATES = [
         "name": "Smite",
         "effect": "single-target",
         "damage": 10,
-        "manaCost": 5,
+        "manaCost": 6,
         "school": "Holy",
         "castMessages": [
             "A pillar of righteous light descends from the ceiling!"
@@ -82,7 +84,7 @@ export const SPELL_TEMPLATES = [
         "name": "AcidSplash",
         "effect": "single-target",
         "damage": 4,
-        "manaCost": 2,
+        "manaCost": 3,
         "school": "Nature",
         "castMessages": [
             "{user} flings a bubble of corrosive green liquid."
@@ -94,7 +96,7 @@ export const SPELL_TEMPLATES = [
         "effect": "vampiric",
         "damage": 6,
         "healsUser": 4,
-        "manaCost": 4,
+        "manaCost": 5,
         "school": "Necromancy",
         "castMessages": [
             "{user}'s hand glows with a sickly purple light as they reach out."
@@ -105,7 +107,7 @@ export const SPELL_TEMPLATES = [
         "name": "ArcaneBlast",
         "effect": "area",
         "damage": 3,
-        "manaCost": 5,
+        "manaCost": 6,
         "school": "Arcane",
         "castMessages": [
             "Magical energy erupts throughout the room!"
@@ -116,7 +118,7 @@ export const SPELL_TEMPLATES = [
         "name": "Scorch",
         "effect": "single-target",
         "damage": 4,
-        "manaCost": 2,
+        "manaCost": 3,
         "school": "Fire",
         "castMessages": [
             "A sudden burst of intense heat flares up under the target."
@@ -128,7 +130,7 @@ export const SPELL_TEMPLATES = [
         "effect": "area",
         "damage": 6,
         "healsUser": 4,
-        "manaCost": 8,
+        "manaCost": 9,
         "school": "Holy",
         "castMessages": [
             "An explosion of light both harms the foe and mends {user}'s wounds."
@@ -139,7 +141,7 @@ export const SPELL_TEMPLATES = [
         "name": "Blizzard",
         "effect": "area",
         "damage": 9,
-        "manaCost": 8,
+        "manaCost": 9,
         "school": "Frost",
         "castMessages": [
             "Freezing winds and heavy slush pummel the area."
@@ -150,7 +152,7 @@ export const SPELL_TEMPLATES = [
         "name": "ChainLightning",
         "effect": "additional-target",
         "damage": 9,
-        "manaCost": 5,
+        "manaCost": 6,
         "school": "Storm",
         "castMessages": [
             "A jagged bolt of electricity arcs through the air!"
@@ -162,7 +164,7 @@ export const SPELL_TEMPLATES = [
         "effect": "heal",
         "damage": 0,
         "healsUser": 20,
-        "manaCost": 10,
+        "manaCost": 11,
         "school": "Holy",
         "castMessages": [
             "A brilliant radiance washes away {user}'s injuries."

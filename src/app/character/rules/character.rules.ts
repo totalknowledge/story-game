@@ -35,6 +35,12 @@ export function applyEquipItem(character: CharacterModel, item: ItemModel): bool
     const targetSlot = item.equippableLocation;
     if (!targetSlot || targetSlot === 'none') return false;
     const currentlyEquippedItem = character.equipment.get(targetSlot);
+    
+    const isBeastOrSlime = character.type === 'Beast' || character.type === 'Slime';
+    if (isBeastOrSlime && currentlyEquippedItem?.type === 'Natural') {
+        return false;
+    }
+    
     character.items = character.items.filter(inventoryItem => inventoryItem !== item);
     if (currentlyEquippedItem) {
         character.items.push(currentlyEquippedItem);
@@ -121,8 +127,8 @@ function calculatePotentialHealing(character: CharacterModel): number {
     return consumableHealing + spellHealing;
 }
 
-export function equipCharacter(character: CharacterModel, itemFactory: ItemFactory, characterTemplate?: any): void {
-    const items: ItemModel[] = [];
+export function equipCharacter(character: CharacterModel, CRTarget: number, itemFactory: ItemFactory, characterTemplate?: any): void {
+    let items: ItemModel[] = [];
 
     if (characterTemplate?.equippedItemTemplate) {
         characterTemplate.equippedItemTemplate?.forEach((item: Partial<ItemModel>) => {
@@ -152,7 +158,10 @@ export function equipCharacter(character: CharacterModel, itemFactory: ItemFacto
     if (items[0]?.typeid === 'weapon-bow-short') {
         items.push(itemFactory.createItem('ammo-arrows'));
     }
-
+    character.equippedItemTemplate ??= [];
+    items.forEach((item) => {
+        character.equippedItemTemplate?.push(item.typeid);
+    })
     applyItemAcquisition(character, items, 100);
     applyCombatRatingCalculation(character);
 }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener } from '@angular/core';
 import { Player } from "../player/player";
 import { Enemies } from "../enemies/enemies";
 import { ConsoleComponent } from "../console/console";
@@ -14,5 +14,10 @@ import { MapService } from '../map/map.service';
 })
 export class Main {
   private mapService = inject(MapService);
+  private channel = new BroadcastChannel('story-game');
   readonly activeFeature = this.mapService.activeFeature;
+
+  focusConsoleInput() {
+    this.channel.postMessage('focus-console');
+  }
 }

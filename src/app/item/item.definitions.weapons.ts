@@ -12,12 +12,50 @@ export const WEAPONS = [
         ]
     },
     {
+        "typeid": "weapon-dagger",
+        "name": "Dagger",
+        "type": "Weapon",
+        "equippableLocation": "right-hand",
+        "quality": "standard",
+        "damage": 4,
+        "resilience": 75,
+        "useMessages": [
+            "{user} equips {item}."
+        ]
+    },
+    {
+        "typeid": "weapon-stick-heafty",
+        "name": "Heafty Stick",
+        "type": "Weapon",
+        "equippableLocation": "right-hand",
+        "quality": "damaged",
+        "plusArmor": 1,
+        "damage": 4,
+        "resilience": 5,
+        "useMessages": [
+            "{user} equips {item}."
+        ]
+    },
+    {
         "typeid": "weapon-club",
         "name": "Club",
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "standard",
         "plusArmor": 1,
+        "damage": 4,
+        "resilience": 80,
+        "useMessages": [
+            "{user} equips {item}."
+        ]
+    },
+    {
+        "typeid": "weapon-stick-big",
+        "name": "Big Stick",
+        "type": "Weapon",
+        "equippableLocation": "right-hand",
+        "quality": "standard",
+        "plusArmor": 2,
         "damage": 4,
         "resilience": 5,
         "useMessages": [
@@ -38,8 +76,21 @@ export const WEAPONS = [
         ]
     },
     {
-        "typeid": "weapon-sword-iron",
-        "name": "Iron Sword",
+        "typeid": "weapon-sword-short-rusty",
+        "name": "Rusty Short Sword",
+        "type": "Weapon",
+        "equippableLocation": "right-hand",
+        "quality": "standard",
+        "plusArmor": 1,
+        "damage": 4,
+        "resilience": 15,
+        "useMessages": [
+            "{user} equips {item}."
+        ]
+    },
+    {
+        "typeid": "weapon-sword-short",
+        "name": "Short Sword",
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "standard",
@@ -51,12 +102,12 @@ export const WEAPONS = [
         ]
     },
     {
-        "typeid": "weapon-sword-steel",
-        "name": "Steel Sword",
+        "typeid": "weapon-sword-long",
+        "name": "Long Sword",
         "type": "Weapon",
         "equippableLocation": "right-hand",
         "quality": "fine",
-        "plusArmor": 1,
+        "plusArmor": 2,
         "damage": 6,
         "resilience": 35,
         "useMessages": [

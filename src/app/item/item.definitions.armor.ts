@@ -76,6 +76,7 @@ export const ARMOR = [
         "name": "Chainmail Armor",
         "type": "Armor",
         "equippableLocation": "body",
+        "quality": "fine",
         "plusArmor": 5,
         "resilience": 40,
         "useMessages": [
@@ -135,6 +136,7 @@ export const ARMOR = [
         "name": "Leather Boots",
         "type": "Armor",
         "equippableLocation": "feet",
+        "quality": "standard",
         "plusArmor": 1,
         "resilience": 8,
         "useMessages": [
@@ -146,6 +148,7 @@ export const ARMOR = [
         "name": "Steel Boots",
         "type": "Armor",
         "equippableLocation": "feet",
+        "quality": "fine",
         "plusArmor": 3,
         "resilience": 99,
         "useMessages": [

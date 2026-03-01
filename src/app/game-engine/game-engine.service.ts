@@ -2,15 +2,16 @@ import { inject, Injectable } from '@angular/core';
 import { CharacterModel } from '../character/character.model';
 import { ItemModel } from '../item/item.model';
 import { CharacterService } from '../character/character.service';
+import { applyBonusCalculation } from '../character/rules/character.rules';
 import { MapService } from '../map/map.service';
 import { Direction } from '../map/room/room.definitions';
-import { ItemFactory } from '../item/item.factory';
-import { FeatureFactory } from '../feature/feature.factory';
 import { TargetingEngine } from './target-engine.service';
 import { SpellModel } from '../spell/spell.model';
 import { CombatEngineService } from './combat-engine.service';
 import { InteractionEngineService } from './interaction-engine.service';
 import { MovementEngineService } from './movement-engine.service';
+import { d10, d100 } from '../utilities/dice.definitions';
+import { ItemFactory } from '../item/item.factory';
 
 @Injectable({
   providedIn: 'root'
@@ -20,13 +21,14 @@ export class GameEngineService {
   private combatEngine = inject(CombatEngineService);
   private interactionEngine = inject(InteractionEngineService);
   private movementEngine = inject(MovementEngineService);
-
   private characterService = inject(CharacterService);
   private mapService = inject(MapService);
   private itemFactory = inject(ItemFactory);
-  private featureFactory = inject(FeatureFactory);
 
-  attack(attacker: CharacterModel, targetFragment: string): string[] {
+  attack(attackerId: string, targetFragment: string): string[] {
+    const attacker = this.characterService.getCharacterById(attackerId);
+    if (!attacker) return ['Attacker not found.'];
+
     const charactersInRoom = this.characterService.getCharactersInRoom();
 
     const targetingResult = this.targetingEngine.resolveTargets({
@@ -53,7 +55,6 @@ export class GameEngineService {
       currentRoom.description
     ];
 
-    // Leverages the Signal we built earlier
     const enemiesHere = this.characterService.enemiesInRoomEntities();
 
     if (enemiesHere.length > 0) {
@@ -81,7 +82,7 @@ export class GameEngineService {
 
     if (departingRoom) {
       this.mapService.updateRoom(departingRoom.coordinateKey, {
-        enemyIds: this.characterService.enemiesInRoomEntities().map(character => character.id)
+        enemyIds: this.characterService.enemiesInRoomEntities().map(character => character.id!)
       });
     }
 
@@ -91,25 +92,52 @@ export class GameEngineService {
 
     if (destinationRoom) {
       const destinationKey = destinationRoom.coordinateKey;
-      const roomHydration = this.movementEngine.processMovement(destinationRoom);
+      const wasVisited = destinationRoom.visited;
+      const mapTargetCR = this.mapService.displayMap()?.targetCR;
+      const roomHydration = this.movementEngine.processMovement(destinationRoom, mapTargetCR);
       destinationRoom.items = roomHydration.items;
       destinationRoom.features = roomHydration.features;
       this.characterService.loadRoomCharacters(destinationRoom.enemyIds, roomHydration.enemies);
 
       this.rest(player);
-      this.characterService.moveCharacter(destinationKey, player.id);
+      this.characterService.moveCharacter(destinationKey, player.id!);
+
+      if (wasVisited && destinationRoom.features?.length) {
+        const storeFeatures = destinationRoom.features.filter((f: any) =>
+          typeof f.type === 'string' && f.type.toLowerCase() === 'store'
+        );
+        if (storeFeatures.length) {
+          storeFeatures.forEach((store: any) => this.refreshStoreInventory(store));
+          this.mapService.updateRoom(destinationKey, { features: destinationRoom.features });
+        }
+      }
 
       if (!destinationRoom.visited) {
         this.mapService.updateRoom(destinationKey, {
           items: roomHydration.items,
           features: roomHydration.features,
-          enemyIds: roomHydration.enemies.map(enemy => enemy.id),
+          enemyIds: roomHydration.enemies.map(enemy => enemy.id!),
           visited: true
         });
       }
     }
 
     return narrative;
+  }
+
+  private refreshStoreInventory(store: any): void {
+    // remove a handful of existing items
+    const removeCount = d10();
+    for (let i = 0; i < removeCount && store.items.length > 0; i++) {
+      const idx = Math.floor(Math.random() * store.items.length);
+      store.items.splice(idx, 1);
+    }
+
+    // add some new stock
+    const addCount = d10() + 3;
+    for (let i = 0; i < addCount; i++) {
+      store.items.push(this.itemFactory.createRandomItem());
+    }
   }
 
   take(player: CharacterModel, itemName: string): string[] {
@@ -159,7 +187,7 @@ export class GameEngineService {
 
     const corpses = allCharacters.filter(character =>
       character.isDead &&
-      character.id !== player.id
+      character.id! !== player.id!
     );
     if (corpses.length === 0) return ['There are no corpses here to search.'];
 
@@ -170,13 +198,21 @@ export class GameEngineService {
     if (targetsToSearch.length === 0) {
       return [`You find no corpses matching "${targetName}".`];
     }
+
+    const isNaturalWeapon = (item: ItemModel) =>
+      item.type === 'Natural' &&
+      (item.equippableLocation === 'right-hand' || item.equippableLocation === 'left-hand');
+
     targetsToSearch.forEach(corpse => {
       output.push(`You search the remains of ${corpse.name}...`);
 
       const equippedLoot = Array.from(corpse.equipment.values()).filter(
-        (item: ItemModel) => item.type != 'Natural'
+        (item: ItemModel) => item && !isNaturalWeapon(item)
       );
-      const allLoot = [...equippedLoot, ...corpse.items];
+
+      const looseLoot = corpse.items.filter(i => !isNaturalWeapon(i));
+      const allLoot = [...equippedLoot, ...looseLoot];
+
       if (allLoot.length === 0) {
         output.push(` - The ${corpse.name} had nothing of value.`);
         return;
@@ -186,14 +222,19 @@ export class GameEngineService {
 
       allLoot.forEach(item => {
         const targetSlot = item.equippableLocation;
-
-        if (targetSlot !== 'none' && !player.equipment.has(targetSlot)) {
-          this.characterService.equipItem(player.id, item);
-          output.push(` - You found and equipped: ${item.name}.`);
-          return;
+        if (item.type !== 'Natural' && targetSlot !== 'none') {
+          const existingItem = player.equipment.get(targetSlot);
+          if (!existingItem) {
+            const equipMessages = this.characterService.equipItem(player.id!, item);
+            const didEquip = equipMessages.some(m => m.toLowerCase().includes('equip'));
+            if (didEquip) {
+              output.push(` - You found and equipped: ${item.name}.`);
+              return;
+            }
+          }
         }
 
-        const wasAcquired = this.characterService.acquireItem(player.id, [item]);
+        const wasAcquired = this.characterService.acquireItem(player.id!, [item]);
         if (wasAcquired) {
           output.push(` - You found and stowed: ${item.name}.`);
         } else {
@@ -212,8 +253,10 @@ export class GameEngineService {
     return output;
   }
 
-  cast(caster: CharacterModel, spell: SpellModel, targetFragment: string): string[] {
+  cast(casterId: string, spell: SpellModel, targetFragment: string): string[] {
+    const caster = this.characterService.getCharacterById(casterId);
     const combatLog: string[] = [];
+    if (!caster) return ['Caster not found.'];
 
     if (caster.currentMana < spell.manaCost) {
       combatLog.push(`${caster.name} does not have enough mana to cast ${spell.name}!`);
@@ -248,9 +291,21 @@ export class GameEngineService {
     if (!currentRoom) return ['You cannot drop items here.'];
 
     currentRoom.items.push(item);
-    player.items = player.items.filter(currentItem => currentItem !== item);
-    this.characterService.updateCharacter(player);
 
+    const hadInInventory = player.items.some(currentItem => currentItem === item);
+    if (hadInInventory) {
+      player.items = player.items.filter(currentItem => currentItem !== item);
+    } else {
+      for (const [slot, equipped] of player.equipment.entries()) {
+        if (equipped === item) {
+          player.equipment.delete(slot);
+          applyBonusCalculation(player);
+          break;
+        }
+      }
+    }
+
+    this.characterService.updateCharacter(player);
     return [`You dropped ${item.name}.`];
   }
 
@@ -271,11 +326,75 @@ export class GameEngineService {
       this.characterService.updateCharacter(player);
     }
 
+    const currentRoom = this.mapService.currentRoom();
+    const currentMap = this.mapService.displayMap();
+    const encounterChance = currentMap?.encounterChance ?? 0;
+
+    if (encounterChance > 0 && d100() <= encounterChance) {
+      messages.push('An ambush! Enemies attack!');
+      const room = currentRoom;
+      if (room?.enemyTypeids?.length) {
+        const enemyType = room.enemyTypeids[0];
+        const mapTargetCR = currentMap?.targetCR;
+        const ambushEnemy = this.characterService.spawnCharacter(enemyType, undefined, mapTargetCR);
+      }
+    }
+
     return messages;
   }
-  use(player: CharacterModel, targetName: string): string[] {
+  
+  revive(player: CharacterModel): string[] {
+    const messages: string[] = [];
+
+    const currentRoom = this.mapService.currentRoom();
+    if (!currentRoom) return ['You cannot revive here.'];
+
+    const equippedItems = Array.from(player.equipment.values()).filter(i => !!i) as ItemModel[];
+    const inventoryItems = player.items || [];
+    const allItems: ItemModel[] = [...equippedItems, ...inventoryItems];
+
+    allItems.forEach(item => {
+      const loss = Math.ceil((item.resilience ?? 0) * 0.10) + 1;
+      item.resilience = Math.max(0, (item.resilience ?? 0) - loss);
+      if ((item.resilience ?? 0) < 10) {
+        item.quality = 'damaged';
+      }
+      currentRoom.items.push(item);
+    });
+
+    player.items = [];
+    player.equipment = new Map();
+
+    player.dead = false;
+    player.damage = 0;
+    player.usedMana = 0;
+
+    this.mapService.loadMap('town', '0,0,0');
+    this.characterService.moveCharacter('0,0,0', player.id!);
+
+    this.mapService.updateRoom(currentRoom.coordinateKey, { items: currentRoom.items });
+
+    messages.push('You have been revived, but your gear was damaged and dropped where you fell.');
+
+    const templates = player.equippedItemTemplate || [];
+    templates.forEach((template: Partial<ItemModel>) => {
+      const newItem = new ItemModel(template);
+      const equipRes = this.characterService.equipItem(player.id!, newItem);
+      const didEquip = equipRes.some(m => m.toLowerCase().includes('equip'));
+      if (!didEquip) {
+        this.characterService.acquireItem(player.id!, [newItem]);
+      }
+    });
+
+    this.characterService.updateCharacter(player);
+
+    return messages;
+  }
+  use(playerId: string, targetName: string): string[] {
+    const player = this.characterService.getCharacterById(playerId);
     if (!player) return ['You do not exist.'];
 
-    return this.interactionEngine.use(player, targetName);
+    const charactersInRoom = this.characterService.getCharactersInRoom();
+    return this.interactionEngine.use(player, targetName, charactersInRoom);
   }
 }

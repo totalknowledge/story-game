@@ -23,6 +23,7 @@ export class RoomModel {
         this.coordinates = roomTemplate.coordinates;
         this.enemyTypeids = roomTemplate.enemyTypeids || [];
         this.itemTypeids = roomTemplate.itemTypeids || [];
+        this.featureTypeids = roomTemplate.featureTypeids || [];
     }
 
     public get coordinateKey(): string {

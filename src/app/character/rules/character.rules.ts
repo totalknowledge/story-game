@@ -59,10 +59,13 @@ export function applyItemAcquisition(
     let acquired = false;
 
     for (const item of items) {
-        const equipped = applyEquipItem(character, item);
-        if (equipped) {
-            acquired = true;
-            continue;
+        const slot = item.equippableLocation;
+        if (slot && slot !== 'none' && !character.equipment.get(slot)) {
+            const equipped = applyEquipItem(character, item);
+            if (equipped) {
+                acquired = true;
+                continue;
+            }
         }
 
         if (character.items.length < maxBackpackSize) {

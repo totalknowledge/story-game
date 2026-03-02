@@ -53,9 +53,12 @@ describe('GameEngineService', () => {
 
     const refreshSpy = vi.spyOn(service as any, 'refreshStoreInventory');
 
-    vi.spyOn(dice, 'd10')
-      .mockReturnValueOnce(2)
-      .mockReturnValueOnce(3);
+    // mock the d10 helper instead of redefining the constant
+    let callCount = 0;
+    const d10Spy = vi.spyOn(dice, 'd10').mockImplementation(() => {
+      callCount++;
+      return callCount === 1 ? 2 : 3;
+    });
 
     const initialCount = storeFeature.items.length;
     expect(service.movePlayer('north').length).toBeGreaterThan(0);
@@ -65,5 +68,8 @@ describe('GameEngineService', () => {
 
     const finalCount = storeFeature.items.length;
     expect(finalCount).toBe(initialCount - 2 + (3 + 3));
+
+    // restore spy
+    d10Spy.mockRestore();
   });
 });

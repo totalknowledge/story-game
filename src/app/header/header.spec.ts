@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterLink } from '@angular/router';
+import { CharacterService } from '../character/character.service';
 
 import { Header } from './header';
 
@@ -8,7 +10,10 @@ describe('Header', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Header]
+      imports: [Header, RouterLink],
+      providers: [
+        { provide: CharacterService, useValue: { spawnCharacter: () => {} } }
+      ]
     })
     .compileComponents();
 

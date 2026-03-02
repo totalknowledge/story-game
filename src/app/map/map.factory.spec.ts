@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { MapFactory } from './map.factory';
 import { RoomFactory } from './room/room.factory';
 import { MapDefinition } from './map.definitions';
-import { RoomModel } from './room/room.model';
 import { Direction } from './room/room.definitions';
+import { ROOM_TEMPLATES } from './room/room.definitions';
 
 describe('MapFactory', () => {
   let factory: MapFactory;
   let roomFactory: RoomFactory;
+
 
   const mockStaticDefinition: MapDefinition = {
     name: 'Test Town',
@@ -42,6 +43,13 @@ describe('MapFactory', () => {
     }
   };
 
+  beforeAll(() => {
+    ROOM_TEMPLATES.push({ typeid: 'start-node', description: 'start' });
+    ROOM_TEMPLATES.push({ typeid: 'north-node', description: 'north' });
+    ROOM_TEMPLATES.push({ typeid: 'cave-entrance', description: 'entrance' });
+    ROOM_TEMPLATES.push({ typeid: 'cave-room', description: 'cave' });
+  });
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [MapFactory, RoomFactory]
@@ -73,7 +81,8 @@ describe('MapFactory', () => {
     it('should attach external map connections if defined', () => {
       const definitionWithExit = JSON.parse(JSON.stringify(mockStaticDefinition));
       definitionWithExit.structure['0,0,0'].mapConnections = [{
-        connection: 'south',
+        direction: 'south',
+        connection: 'world-hub',
         loads: 'world-hub',
         name: 'Town Gate'
       }];

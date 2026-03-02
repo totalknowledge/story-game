@@ -1,13 +1,13 @@
 <div class="h-full flex flex-col p-4 gap-4 overflow-hidden">
     <div role="tablist" class="tabs tabs-boxed">
         <button role="tab" class="tab" [class.tab-active]="activeTab === 'items'"
-            (click)="activeTab = 'items'; selectedTypes.clear()">Items</button>
+            (click)="changeTab('items')">Items</button>
         <button role="tab" class="tab" [class.tab-active]="activeTab === 'spells'"
-            (click)="activeTab = 'spells'; selectedTypes.clear()">Spells</button>
+            (click)="changeTab('spells')">Spells</button>
         <button role="tab" class="tab" [class.tab-active]="activeTab === 'enemies'"
-            (click)="activeTab = 'enemies'; selectedTypes.clear()">Enemies</button>
+            (click)="changeTab('enemies')">Enemies</button>
         <button role="tab" class="tab" [class.tab-active]="activeTab === 'features'"
-            (click)="activeTab = 'features'; selectedTypes.clear()">Features</button>
+            (click)="changeTab('features')">Features</button>
     </div>
 
     <div class="flex gap-4 items-center flex-wrap">

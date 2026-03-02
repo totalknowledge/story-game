@@ -16,6 +16,15 @@ export class Admin {
   activeTab = 'items';
   showJson = false;
 
+  tabChanged: (newTab: string) => void = () => {};
+
+  changeTab(tab: string) {
+    if (this.activeTab === tab) return;
+    this.activeTab = tab;
+    this.selectedTypes.clear();
+    this.tabChanged(tab);
+  }
+
   items: any[] = [...ITEM_TEMPLATES];
   spells: any[] = [...SPELL_TEMPLATES];
   enemies: any[] = [...ENEMY_TEMPLATES];

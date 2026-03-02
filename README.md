@@ -14,27 +14,52 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 ## Code scaffolding
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+# Story Game
+
+Story Game is a small Angular-based, text-oriented adventure/roguelike framework and demo. It provides a lightweight game engine, item/character factories, simple map systems, and a console interface for interacting with the world.
+
+Quick start
+
+1. Install dependencies:
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+2. Run the development server:
 
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+Open http://localhost:4200/ and interact with the game UI and console.
 
-To build the project run:
+Build
 
 ```bash
-ng build
+npm run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Testing
+
+Run unit tests:
+
+```bash
+npm test
+```
+
+Project layout (important folders)
+
+- `src/app` — main application code and game modules (items, characters, map, engines, console).
+- `public/` — static assets and images.
+
+Contributing
+
+This repository is intended for iterative development and experimentation. If you add features or refactor systems, keep changes small and focused, and include basic verification steps (manual gameplay and a unit test where appropriate).
+
+License
+
+This repo contains original code for a personal project; adapt and reuse as you like.
 
 ## Running unit tests
 

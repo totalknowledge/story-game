@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TargetEngineService } from './target-engine.service';
+import { TargetingEngine } from './target-engine.service';
 
-describe('TargetEngineService', () => {
-  let service: TargetEngineService;
+describe('TargetingEngine', () => {
+  let service: TargetingEngine;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(TargetEngineService);
+    service = TestBed.inject(TargetingEngine);
   });
 
   it('should be created', () => {

@@ -34,7 +34,7 @@ describe('ConsoleService', () => {
     const player = charService.spawnCharacter('player');
     const apple = new ItemModel({ name: 'Apple', typeid: 'apple', type: 'consumable' });
 
-    charService.acquireItem(player.id, [apple]);
+    charService.acquireItem(player.id!, [apple]);
     expect(player.items).toContain(apple);
 
     const result = (service as any).handleDrop('apple');
@@ -52,8 +52,8 @@ describe('ConsoleService', () => {
       equippableLocation: 'right-hand'
     });
 
-    charService.acquireItem(player.id, [sword]);
-    charService.equipItem(player.id, sword);
+    charService.acquireItem(player.id!, [sword]);
+    charService.equipItem(player.id!, sword);
     expect(player.items).not.toContain(sword);
     expect(player.equipment.get('right-hand')).toBe(sword);
 
@@ -61,5 +61,29 @@ describe('ConsoleService', () => {
     expect(result).toEqual(['You unequip the Sword.', 'You dropped Sword.']);
     expect(player.equipment.get('right-hand')).toBeUndefined();
     expect(mapService.currentRoom()?.items).toContain(sword);
+  });
+
+  it('does not auto-equip a new item if slot is occupied', () => {
+    const player = charService.spawnCharacter('player');
+    const first = new ItemModel({
+      name: 'First Sword',
+      typeid: 'sword1',
+      type: 'weapon',
+      equippableLocation: 'right-hand'
+    });
+    const second = new ItemModel({
+      name: 'Second Sword',
+      typeid: 'sword2',
+      type: 'weapon',
+      equippableLocation: 'right-hand'
+    });
+
+    charService.acquireItem(player.id!, [first]);
+    charService.equipItem(player.id!, first);
+    expect(player.equipment.get('right-hand')).toBe(first);
+
+    charService.acquireItem(player.id!, [second]);
+    expect(player.equipment.get('right-hand')).toBe(first);
+    expect(player.items).toContain(second);
   });
 });

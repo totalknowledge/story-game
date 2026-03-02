@@ -126,14 +126,12 @@ export class GameEngineService {
   }
 
   private refreshStoreInventory(store: any): void {
-    // remove a handful of existing items
     const removeCount = d10();
     for (let i = 0; i < removeCount && store.items.length > 0; i++) {
       const idx = Math.floor(Math.random() * store.items.length);
       store.items.splice(idx, 1);
     }
 
-    // add some new stock
     const addCount = d10() + 3;
     for (let i = 0; i < addCount; i++) {
       store.items.push(this.itemFactory.createRandomItem());

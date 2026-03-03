@@ -5,6 +5,7 @@ import { ENEMY_TEMPLATES } from '../character/character.definitions';
 import { FEATURE_TEMPLATES } from '../feature/feature.definitions';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
+import { calculateCombatRating } from '../utilities/combat.definitions';
 
 @Component({
   selector: 'app-admin',
@@ -35,13 +36,13 @@ export class Admin {
   editRow: number | null = null;
 
   itemColumns = [
-    'typeid', 'name', 'type', 'quantity', 'quality', 'equippableLocation', 'damage',
+    'typeid', 'name', 'type', 'quantity', 'excludeFromRandom', 'quality', 'equippableLocation', 'damage',
     'plusHit', 'plusDamage', 'plusArmor', 'resilience',
     'bonusHealth', 'bonusMana', 'heals', 'restores', 'useMessages', 'teaches', 'baseCr'
   ];
 
   spellColumns = [
-    'typeid', 'name', 'type', 'effect', 'damage', 'healsUser', 'manaCost', 'castMessages'
+    'typeid', 'name', 'type', 'effect', 'damage', 'healsUser', 'manaCost', 'castMessages', 'combatRating'
   ];
 
   enemiesColumns = [
@@ -49,8 +50,9 @@ export class Admin {
   ];
 
   edit(row: any, index: number) {
+    const sourceIndex = this.currentAllData.indexOf(row);
     this.newData = { ...row };
-    this.editRow = index;
+    this.editRow = sourceIndex >= 0 ? sourceIndex : index;
   }
 
   get availableTypes(): string[] {
@@ -72,8 +74,11 @@ export class Admin {
   }
 
   get currentData() {
-    if (this.selectedTypes.size === 0) return this.currentAllData;
-    return this.currentAllData.filter(item => this.selectedTypes.has(item.type));
+    const filtered = this.selectedTypes.size === 0
+      ? [...this.currentAllData]
+      : this.currentAllData.filter(item => this.selectedTypes.has(item.type));
+
+    return filtered.sort((left, right) => this.compareRows(left, right));
   }
 
   get currentColumns() {
@@ -99,7 +104,11 @@ export class Admin {
     }
 
     if (column === 'combatRating' && !row.combatRating) {
-      row.combatRating = this.calculateTemplateCR(row, SPELL_TEMPLATES);
+      if (this.activeTab === 'spells') {
+        row.combatRating = this.calculateSpellCR(row);
+      } else {
+        row.combatRating = this.calculateTemplateCR(row, SPELL_TEMPLATES);
+      }
     }
 
     if (column === 'type') {
@@ -132,19 +141,21 @@ export class Admin {
   }
 
   addRow(editRow?: Boolean) {
+    const normalizedData = this.normalizeRowTypes(this.newData);
+
     if (editRow) {
       switch (this.activeTab) {
-        case 'items': this.items[this.editRow!] = this.newData; break;
-        case 'spells': this.spells[this.editRow!] = this.newData; break;
-        case 'enemies': this.enemies[this.editRow!] = this.newData; break;
-        case 'features': this.features[this.editRow!] = this.newData; break;
+        case 'items': this.items[this.editRow!] = normalizedData; break;
+        case 'spells': this.spells[this.editRow!] = normalizedData; break;
+        case 'enemies': this.enemies[this.editRow!] = normalizedData; break;
+        case 'features': this.features[this.editRow!] = normalizedData; break;
       }
     } else {
       switch (this.activeTab) {
-        case 'items': this.items.push(this.newData); break;
-        case 'spells': this.spells.push(this.newData); break;
-        case 'enemies': this.enemies.push(this.newData); break;
-        case 'features': this.features.push(this.newData); break;
+        case 'items': this.items.push(normalizedData); break;
+        case 'spells': this.spells.push(normalizedData); break;
+        case 'enemies': this.enemies.push(normalizedData); break;
+        case 'features': this.features.push(normalizedData); break;
       }
     }
     this.newData = {};
@@ -152,35 +163,62 @@ export class Admin {
   }
 
   calculateItemCR(item: any): number {
-    let cr = 0;
+    if (Array.isArray(item)) {
+      const total = item.reduce((sum: number, current: any) =>
+        sum + calculateCombatRating({
+          terms: {
+            plusHit: current.plusHit,
+            plusDamage: current.plusDamage,
+            damage: current.damage,
+            plusArmor: current.plusArmor,
+            bonusHealth: current.bonusHealth,
+            minusToBeHit: current.minusToBeHit,
+            bonusMana: current.bonusMana,
+            heals: current.heals,
+            restores: current.restores,
+            teachesCount: current.teaches?.length ?? 0,
+          },
+          round: (value) => value,
+        }), 0);
+      return Math.round(total * 10) / 10;
+    }
 
-    cr += (item.damage ?? 0) * 0.5;
-    cr += (item.plusHit ?? 0);
-    cr += (item.plusDamage ?? 0);
-    cr += (item.plusArmor ?? 0);
-    cr += (item.bonusHealth ?? 0) * 0.1;
-    cr += (item.bonusMana ?? 0) * 0.1;
-    cr += (item.heals ?? 0) * 0.3;
-    cr += (item.restores ?? 0) * 0.3;
+    const value = calculateCombatRating({
+      terms: {
+        plusHit: item.plusHit,
+        plusDamage: item.plusDamage,
+        damage: item.damage,
+        plusArmor: item.plusArmor,
+        bonusHealth: item.bonusHealth,
+        minusToBeHit: item.minusToBeHit,
+        bonusMana: item.bonusMana,
+        heals: item.heals,
+        restores: item.restores,
+        teachesCount: item.teaches?.length ?? 0,
+      },
+      round: (result) => result,
+    });
 
-    return Math.round(cr * 10) / 10;
+    return Math.round(value * 10) / 10;
   }
 
   calculateSpellCR(spell: any): number {
-    let cr = 0;
+    const effectMultipliers: Record<string, number> = {
+      area: 1.5,
+      'additional-target': 1.3,
+      vampiric: 1.2,
+    };
 
-    cr += (spell.damage ?? 0) * 0.3;
-    cr += (spell.healsUser ?? 0) * 0.15;
+    const value = calculateCombatRating({
+      terms: {
+        spellDamage: spell.damage,
+        spellHealsUser: spell.healsUser,
+      },
+      multiplier: effectMultipliers[spell.effect] ?? 1,
+      round: (result) => result,
+    });
 
-    if (spell.effect === 'area') {
-      cr *= 1.5;
-    } else if (spell.effect === 'additional-target') {
-      cr *= 1.3;
-    } else if (spell.effect === 'vampiric') {
-      cr *= 1.2;
-    }
-
-    return Math.round(cr * 10) / 10;
+    return Math.round(value * 10) / 10;
   }
 
   calculateTemplateCR(enemyTemplate: any, spellTemplates: any[], itemTemplates?: any[]): number {
@@ -202,13 +240,150 @@ export class Admin {
       spellCR = totalSpellCR / spells.length;
     }
 
-    const physicalCR = weaponCR + healthComponent;
-    const magicalCR = manaComponent + spellCR + healthComponent;
+    const physicalCR = calculateCombatRating({
+      terms: {
+        avgWeaponDamage: weaponCR,
+        healthComponent,
+      },
+      round: (value) => value,
+    });
+
+    const magicalCR = calculateCombatRating({
+      terms: {
+        manaComponent,
+        avgSpellDamage: spellCR,
+        healthComponent,
+      },
+      round: (value) => value,
+    });
 
     return Math.round(Math.max(physicalCR, magicalCR));
   }
 
   toggleJson() {
     this.showJson = !this.showJson;
+  }
+
+  private compareRows(left: any, right: any): number {
+    const typeCompare = this.getTypeForSort(left).localeCompare(this.getTypeForSort(right));
+    if (typeCompare !== 0) return typeCompare;
+
+    const leftCombatRating = this.getCombatRatingForSort(left);
+    const rightCombatRating = this.getCombatRatingForSort(right);
+
+    if (leftCombatRating !== null && rightCombatRating !== null && leftCombatRating !== rightCombatRating) {
+      return rightCombatRating - leftCombatRating;
+    }
+
+    return this.getNameForSort(left).localeCompare(this.getNameForSort(right));
+  }
+
+  private getTypeForSort(row: any): string {
+    if (row.type) return String(row.type);
+    if (row.school) return String(row.school);
+    if (row.typeid) return row.typeid.includes('humanoid') ? 'Humanoid' : 'Beast';
+    return '';
+  }
+
+  private getCombatRatingForSort(row: any): number | null {
+    if (this.activeTab === 'items') {
+      if (row.baseCr === undefined || row.baseCr === null) {
+        row.baseCr = this.calculateItemCR(row);
+      }
+      return Number(row.baseCr);
+    }
+
+    if (this.activeTab === 'spells') {
+      if (row.baseCr === undefined || row.baseCr === null) {
+        row.baseCr = this.calculateSpellCR(row);
+      }
+      return Number(row.baseCr);
+    }
+
+    if (this.activeTab === 'enemies') {
+      if (row.combatRating === undefined || row.combatRating === null) {
+        row.combatRating = this.calculateTemplateCR(row, SPELL_TEMPLATES);
+      }
+      return Number(row.combatRating);
+    }
+
+    return null;
+  }
+
+  private getNameForSort(row: any): string {
+    return String(row.name ?? '');
+  }
+
+  private normalizeRowTypes(row: any): any {
+    const normalized: Record<string, any> = {};
+
+    Object.entries(row ?? {}).forEach(([key, value]) => {
+      const referenceValue = this.getReferenceValueForKey(key);
+      const normalizedValue = this.normalizeValueByReference(value, referenceValue);
+
+      if (normalizedValue !== undefined) {
+        normalized[key] = normalizedValue;
+      }
+    });
+
+    return normalized;
+  }
+
+  private getReferenceValueForKey(key: string): any {
+    for (const row of this.currentAllData) {
+      if (row && key in row && row[key] !== undefined && row[key] !== null) {
+        return row[key];
+      }
+    }
+
+    return undefined;
+  }
+
+  private normalizeValueByReference(rawValue: any, referenceValue: any): any {
+    if (typeof rawValue !== 'string') {
+      return rawValue;
+    }
+
+    if (referenceValue === undefined) {
+      return rawValue;
+    }
+
+    const trimmed = rawValue.trim();
+
+    if (typeof referenceValue === 'number') {
+      if (!trimmed) return undefined;
+      const parsedNumber = Number(trimmed);
+      return Number.isFinite(parsedNumber) ? parsedNumber : rawValue;
+    }
+
+    if (typeof referenceValue === 'boolean') {
+      if (!trimmed) return undefined;
+      const normalized = trimmed.toLowerCase();
+      if (normalized === 'true' || normalized === '1') return true;
+      if (normalized === 'false' || normalized === '0') return false;
+      return rawValue;
+    }
+
+    if (Array.isArray(referenceValue)) {
+      if (!trimmed) return [];
+      try {
+        const parsed = JSON.parse(rawValue);
+        return Array.isArray(parsed) ? parsed : rawValue;
+      } catch {
+        return rawValue;
+      }
+    }
+
+    if (typeof referenceValue === 'object') {
+      if (!trimmed) return {};
+      try {
+        const parsed = JSON.parse(rawValue);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : rawValue;
+      } catch {
+        return rawValue;
+      }
+    }
+
+    return rawValue;
   }
 }

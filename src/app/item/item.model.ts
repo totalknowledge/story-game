@@ -1,4 +1,5 @@
-import { EquipLocation } from "./item.definitions";
+import { EquipLocation, ItemQuality } from "./item.definitions";
+import { calculateCombatRating } from "../utilities/combat.definitions";
 
 export class ItemModel {
     id?: string;
@@ -6,7 +7,8 @@ export class ItemModel {
     name: string;
     type: string;
     equippableLocation?: EquipLocation;
-    quality?: string;
+    quality?: ItemQuality;
+    excludeFromRandom?: boolean;
     quantity?: number;
     damage?: number;
     plusHit?: number;
@@ -20,6 +22,7 @@ export class ItemModel {
     restores?: number;
     useMessages: string[] = [];
     teaches: string[] = [];
+    baseCost: number;
 
     constructor(template: any = {}) {
         this.id = crypto.randomUUID();
@@ -38,16 +41,21 @@ export class ItemModel {
         this.plusArmor = template.plusArmor ?? 0;
         this.minusToBeHit = template.minusToBeHit ?? 0;
         this.plusDamage = template.plusDamage ?? 0;
+        this.quantity = template.quantity;
+        this.quality = template.quality ?? 'standard';
+        this.excludeFromRandom = template.excludeFromRandom ?? false;
 
         this.useMessages = Array.isArray(template.useMessages) ? template.useMessages : [];
         this.teaches = Array.isArray(template.teaches) ? template.teaches : [];
+
+        this.baseCost = template.baseCost ?? 1;
     }
 
-    isDestroyed(): boolean {
+    public isDestroyed(): boolean {
         return this.resilience !== null && this?.resilience <= 0;
     }
 
-    damageItem(amount: number): string[] {
+    public damageItem(amount: number): string[] {
         if (this.resilience === null || this.isDestroyed()) return [];
 
         const loss = Math.max(0, amount ?? 0);
@@ -58,43 +66,47 @@ export class ItemModel {
             : [`${this.name} was damaged.`];
     }
 
-    get combatRating(): number {
-        const physicalPower = (this.plusHit ?? 0) + (this.plusDamage ?? 0) + (this.damage ?? 0);
-        const defensivePower = (this.plusArmor ?? 0) +
-            ((this.bonusHealth ?? 0) / 10) +
-            ((this.minusToBeHit ?? 0) * 2) +
-            ((this.heals ?? 0) / 30) +
-            ((this.restores ?? 0) / 20);
-        const utilityPower = ((this.bonusMana ?? 0) / 10 * 3) +
-            (0.05 * (this.heals ?? 0)) +
-            (this.teaches.length * 5);
-
-        return Math.ceil(physicalPower + defensivePower + utilityPower) || 50;
+    public get combatRating(): number {
+        return calculateCombatRating({
+            terms: {
+                plusHit: this.plusHit,
+                plusDamage: this.plusDamage,
+                damage: this.damage,
+                plusArmor: this.plusArmor,
+                bonusHealth: this.bonusHealth,
+                minusToBeHit: this.minusToBeHit,
+                bonusMana: this.bonusMana,
+                heals: this.heals,
+                restores: this.restores,
+                teachesCount: this.teaches.length,
+            },
+            round: (value) => Math.ceil(value),
+        });
     }
 
-    get cost(): number {
-        const baseCost = this.combatRating * 10 * (this.quantity ?? 1);
+    public get cost(): number {
+        const baseCost = (this.combatRating + this.baseCost) * (this.quantity ?? 1);
         switch (this.quality) {
             case 'damaged':
-                return Math.round(baseCost * 0.5);
+                return Math.round(baseCost * 0.3);
             case 'standard':
                 return baseCost;
             case 'fine':
-                return Math.round(baseCost * 1.7);
+                return Math.round(baseCost * 2.1);
             case 'elite':
-                return baseCost * 3;
+                return baseCost * 4.5;
             case 'magical':
-                return baseCost * 10;
+                return baseCost * 25;
             default:
                 return baseCost;
         }
     }
 
-    getUseMessages(): string[] {
+    public getUseMessages(): string[] {
         return [...this.useMessages];
     }
 
-    toString(): string {
+    public toString(): string {
         if (this.resilience !== null && this.resilience <= 0) {
             return `Broken ${this.name}`;
         }

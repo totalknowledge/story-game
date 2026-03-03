@@ -19,7 +19,7 @@ export class CharacterModel {
     usedMana: number = 0;
     items: any[] = [];
     equipment = new Map<string, any>();
-    equippedItemTemplate?: Partial<ItemModel>[];
+    equippedItemTemplate?: Array<Partial<ItemModel> | string>;
     spells: any[] = [];
     spellTypeids?: string[];
     dead: boolean = false;

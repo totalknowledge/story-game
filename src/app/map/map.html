@@ -22,6 +22,20 @@
             (click)="log(cell)">
             @if (cell.isPlayer) {
             <span class="map-glyph">◉</span>
+            } @else if (cell.visible) {
+            <span class="map-markers">
+                @if (hasFeature(cell.room)) {
+                <span class="map-marker">•</span>
+                }
+
+                @if (hasUp(cell.room) && hasDown(cell.room)) {
+                <span class="map-marker">↕</span>
+                } @else if (hasUp(cell.room)) {
+                <span class="map-marker">↑</span>
+                } @else if (hasDown(cell.room)) {
+                <span class="map-marker">↓</span>
+                }
+            </span>
             }
         </div>
         }

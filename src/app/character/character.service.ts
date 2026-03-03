@@ -18,13 +18,27 @@ export class CharacterService {
     const character = this.characterRegistry.get(characterId);
     if (!character) return false;
 
-    const { acquired } = applyItemAcquisition(character, items, this.MAX_BACKPACK_SIZE);
-    if (acquired) {
-      applyCombatRatingCalculation(character);
+    const isPlayerCharacter = character.id === this.playerCharacterId || character.typeid === 'player';
+    const naturalItems = isPlayerCharacter ? items.filter(item => item?.type === 'Natural') : [];
+    const regularItems = isPlayerCharacter ? items.filter(item => item?.type !== 'Natural') : items;
+
+    const { acquired } = applyItemAcquisition(character, regularItems, this.MAX_BACKPACK_SIZE);
+    let acquiredAny = acquired;
+
+    if (isPlayerCharacter && naturalItems.length > 0) {
+      naturalItems.forEach(item => {
+        if (character.items.length < this.MAX_BACKPACK_SIZE) {
+          character.items.push(item);
+          acquiredAny = true;
+        }
+      });
+    }
+
+    if (acquiredAny) {
       this.updateCharacter(character);
     }
 
-    return acquired;
+    return acquiredAny;
   }
 
   public enemiesInRoom(): Signal<CharacterModel[]> {
@@ -47,6 +61,11 @@ export class CharacterService {
   public equipItem(characterId: string, item: ItemModel): string[] {
     const character = this.getCharacterById(characterId);
     if (!character) return ['Character not found.'];
+
+    const isPlayerCharacter = character.id === this.playerCharacterId || character.typeid === 'player';
+    if (isPlayerCharacter && item.type === 'Natural') {
+      return [`You cannot equip natural anatomy like ${item.name}.`];
+    }
 
     const slot = item.equippableLocation;
     if (!slot || slot === 'none') return [`The ${item.name} cannot be equipped.`];
@@ -137,6 +156,9 @@ export class CharacterService {
   }
 
   public updateCharacter(character: CharacterModel): void {
+    applyBonusCalculation(character);
+    applyCombatRatingCalculation(character);
+
     this.characterRegistry.set(character.id!, character);
 
     this.charactersInRoom.update(inRoomCharacters => {

@@ -21,7 +21,7 @@ export class ItemFactory {
   }
 
   createRandomItem(includeTypes?: string[], CRTarget: number = 9, excludeTypes: string[] = ['Natural']): ItemModel {
-    let itemPool = ITEM_TEMPLATES;
+    let itemPool = ITEM_TEMPLATES.filter(itemTemplate => (itemTemplate as any).excludeFromRandom !== true);
     if (CRTarget < 10) {
         itemPool = itemPool.filter(itemTemplate => ['damaged', 'standard'].includes(itemTemplate.quality ?? 'standard'))
     } else if (CRTarget < 20) {

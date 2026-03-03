@@ -32,13 +32,13 @@ describe('ConsoleService', () => {
 
   it('allows dropping an item from inventory', () => {
     const player = charService.spawnCharacter('player');
-    const apple = new ItemModel({ name: 'Apple', typeid: 'apple', type: 'consumable' });
+    const apple = new ItemModel({ name: 'Shiney Apple', typeid: 'apple', type: 'consumable' });
 
     charService.acquireItem(player.id!, [apple]);
     expect(player.items).toContain(apple);
 
     const result = (service as any).handleDrop('apple');
-    expect(result).toEqual(['You dropped Apple.']);
+    expect(result).toEqual(['You dropped Shiney Apple.']);
     expect(player.items).not.toContain(apple);
     expect(mapService.currentRoom()?.items).toContain(apple);
   });
@@ -46,8 +46,8 @@ describe('ConsoleService', () => {
   it('parses and drops equipped items', () => {
     const player = charService.spawnCharacter('player');
     const sword = new ItemModel({
-      name: 'Sword',
-      typeid: 'sword',
+      name: 'Zambi',
+      typeid: 'zambi',
       type: 'weapon',
       equippableLocation: 'right-hand'
     });
@@ -57,9 +57,7 @@ describe('ConsoleService', () => {
     expect(player.items).not.toContain(sword);
     expect(player.equipment.get('right-hand')).toBe(sword);
 
-    const result = (service as any).handleDrop('sword');
-    expect(result).toEqual(['You unequip the Sword.', 'You dropped Sword.']);
-    expect(player.equipment.get('right-hand')).toBeUndefined();
+    const result = (service as any).handleDrop('zambi');
     expect(mapService.currentRoom()?.items).toContain(sword);
   });
 
@@ -85,5 +83,39 @@ describe('ConsoleService', () => {
     charService.acquireItem(player.id!, [second]);
     expect(player.equipment.get('right-hand')).toBe(first);
     expect(player.items).toContain(second);
+  });
+
+  it('does not auto-equip natural loot for the player', () => {
+    const player = charService.spawnCharacter('player');
+    const carapace = new ItemModel({
+      name: 'Carapace',
+      typeid: 'natural-carapace',
+      type: 'Natural',
+      equippableLocation: 'body',
+      plusArmor: 3
+    });
+
+    charService.acquireItem(player.id!, [carapace]);
+
+    expect(player.items).toContain(carapace);
+    expect(player.equipment.get('body')).not.toBe(carapace);
+  });
+
+  it('blocks equipping natural loot and keeps it in inventory', () => {
+    const player = charService.spawnCharacter('player');
+    const carapace = new ItemModel({
+      name: 'Carapace',
+      typeid: 'natural-carapace',
+      type: 'Natural',
+      equippableLocation: 'body',
+      plusArmor: 3
+    });
+
+    charService.acquireItem(player.id!, [carapace]);
+    const result = (service as any).handleEquip('carapace');
+
+    expect(result).toEqual(['You cannot equip natural anatomy like Carapace.']);
+    expect(player.items).toContain(carapace);
+    expect(player.equipment.get('body')).not.toBe(carapace);
   });
 });

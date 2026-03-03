@@ -50,6 +50,17 @@
     font-size: calc(1.05rem * var(--map-scale));
 }
 
+.map-markers {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(0.2rem * var(--map-scale));
+    font-size: calc(0.8rem * var(--map-scale));
+}
+
+.map-marker {
+    line-height: 1;
+}
+
 /* Exit "breaks" in the outline */
 .map-cell--open-north {
     border-top-color: transparent;

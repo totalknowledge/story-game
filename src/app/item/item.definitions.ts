@@ -4,6 +4,8 @@ import { WEAPONS } from "./item.definitions.weapons";
 
 export type EquipLocation = 'head' | 'body' | 'right-hand' | 'left-hand' | 'left-finger' | 'legs' | 'feet' | 'neck' | 'none';
 
+export type ItemQuality = 'damaged' | 'standard' | 'fine' | 'elite' | 'magical';
+
 export const ITEM_TEMPLATES = [
     ...CONSUMABLES,
     ...WEAPONS,

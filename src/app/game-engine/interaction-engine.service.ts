@@ -106,7 +106,7 @@ export class InteractionEngineService {
     switch (item.type) {
       case 'Consumable':
         interactionLog.push(...this.applyConsumableEffects(actor, item));
-        actor.items = actor.items.filter(inventoryItem => inventoryItem.id !== item.id);
+        this.decrementOrRemoveInventoryItem(actor, item);
         break;
 
       case 'Armor':
@@ -221,5 +221,17 @@ export class InteractionEngineService {
 
   private removeItemFromActor(actor: CharacterModel, item: ItemModel): void {
     actor.items = actor.items.filter(inventoryItem => inventoryItem.id !== item.id);
+  }
+
+  private decrementOrRemoveInventoryItem(actor: CharacterModel, item: ItemModel): void {
+    const currentQuantity = item.quantity ?? 1;
+    const updatedQuantity = currentQuantity - 1;
+
+    if (updatedQuantity > 0) {
+      item.quantity = updatedQuantity;
+      return;
+    }
+
+    this.removeItemFromActor(actor, item);
   }
 }

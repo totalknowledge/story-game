@@ -1,4 +1,4 @@
-import { Component, inject, input, Signal } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { FeatureModel } from './feature.model';
 import { FeatureService } from './feature.service';
 

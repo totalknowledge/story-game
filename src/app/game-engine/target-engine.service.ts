@@ -54,9 +54,10 @@ export class TargetingEngine {
         break;
 
       case 'additional-target':
-        if (!request.targetFragment && enemies.length > 0) {
-          result.hostileTargets = [enemies[0]];
-          if (enemies.length > 1) result.hostileTargets.push(enemies[1]);
+        const livingEnemies = enemies.filter(e => !e.isDead);
+        if (!request.targetFragment && livingEnemies.length > 0) {
+          result.hostileTargets = [livingEnemies[0]];
+          if (livingEnemies.length > 1) result.hostileTargets.push(livingEnemies[1]);
         } else {
           const primary = this.findCharacterByFragment(request.targetFragment ?? '', enemies);
           if (primary) {

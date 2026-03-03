@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test --no-watch --coverage"
   },
   "prettier": {
     "printWidth": 100,
@@ -37,6 +37,7 @@
     "@angular/cli": "^21.0.5",
     "@angular/compiler-cli": "^21.0.0",
     "@tailwindcss/postcss": "^4.1.12",
+    "@vitest/coverage-v8": "^4.0.18",
     "daisyui": "^5.5.18",
     "jsdom": "^27.1.0",
     "postcss": "^8.5.3",

@@ -31,6 +31,20 @@
         </div>
         }
 
+        @if (entry['heals']) {
+        <div class="flex justify-between">
+            <span>Heals:</span>
+            <span class="text-success">{{ entry['heals'] }}</span>
+        </div>
+        }
+
+        @if (entry['restores']) {
+        <div class="flex justify-between">
+            <span>Restores:</span>
+            <span class="text-info">{{ entry['restores'] }}</span>
+        </div>
+        }
+
         @if (entry['school']) {
         <div class="flex justify-between">
             <span>School:</span>

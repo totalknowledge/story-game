@@ -2,6 +2,7 @@ import { CharacterModel } from '../character.model';
 import { ItemModel } from '../../item/item.model';
 import { rollDice } from '../../utilities/dice.definitions';
 import { ItemFactory } from '../../item/item.factory';
+import { calculateCombatRating } from '../../utilities/combat.definitions';
 
 export function applyBonusCalculation(character: CharacterModel): CharacterModel {
     let toHit = 0;
@@ -59,6 +60,12 @@ export function applyItemAcquisition(
     let acquired = false;
 
     for (const item of items) {
+        if (item.type === 'Consumable') {
+            const stacked = stackConsumableItem(character, item, maxBackpackSize);
+            acquired = acquired || stacked;
+            continue;
+        }
+
         const slot = item.equippableLocation;
         if (slot && slot !== 'none' && !character.equipment.get(slot)) {
             const equipped = applyEquipItem(character, item);
@@ -77,28 +84,77 @@ export function applyItemAcquisition(
     return { updatedCharacter: character, acquired };
 }
 
+function stackConsumableItem(character: CharacterModel, item: ItemModel, maxBackpackSize: number): boolean {
+    let remainingQuantity = Math.max(1, item.quantity ?? 1);
+
+    const matchingStacks = character.items.filter((inventoryItem: ItemModel) =>
+        inventoryItem?.type === 'Consumable' &&
+        inventoryItem?.typeid === item.typeid &&
+        (inventoryItem.quantity ?? 1) < 5
+    );
+
+    for (const stack of matchingStacks) {
+        const currentStackQuantity = stack.quantity ?? 1;
+        const availableSpace = 5 - currentStackQuantity;
+        if (availableSpace <= 0) continue;
+
+        const transferAmount = Math.min(availableSpace, remainingQuantity);
+        stack.quantity = currentStackQuantity + transferAmount;
+        remainingQuantity -= transferAmount;
+
+        if (remainingQuantity <= 0) {
+            return true;
+        }
+    }
+
+    let addedAny = false;
+    while (remainingQuantity > 0 && character.items.length < maxBackpackSize) {
+        const stackQuantity = Math.min(5, remainingQuantity);
+        const stackItem = addedAny
+            ? new ItemModel({ ...item, quantity: stackQuantity })
+            : item;
+
+        stackItem.quantity = stackQuantity;
+        character.items.push(stackItem);
+
+        remainingQuantity -= stackQuantity;
+        addedAny = true;
+    }
+
+    return addedAny;
+}
+
 export function applyCombatRatingCalculation(character: CharacterModel): void {
     const healthComponent = character.maxHealth / 10;
     const armorComponent = (character.armor ?? 0);
     const healingComponent = 0.05 * calculatePotentialHealing(character);
 
     const avgWeaponDamage = getAverageWeaponDamage(character);
-    const physicalCR =
-        (character.toHit ?? 0) +
-        (character.toDamage ?? 0) +
-        avgWeaponDamage +
-        healthComponent +
-        armorComponent +
-        healingComponent;
-
     const manaComponent = (character.baseMana / 10) * 3;
     const avgSpellDamage = getAverageSpellDamage(character);
-    const magicalCR =
-        manaComponent +
-        avgSpellDamage +
-        healthComponent +
-        armorComponent +
-        healingComponent;
+
+    const physicalCR = calculateCombatRating({
+        terms: {
+            toHit: character.toHit,
+            toDamage: character.toDamage,
+            avgWeaponDamage,
+            healthComponent,
+            armorComponent,
+            healingComponent,
+        },
+        round: (value) => value,
+    });
+
+    const magicalCR = calculateCombatRating({
+        terms: {
+            manaComponent,
+            avgSpellDamage,
+            healthComponent,
+            armorComponent,
+            healingComponent,
+        },
+        round: (value) => value,
+    });
 
     character.combatRating = Math.round(Math.max(physicalCR, magicalCR));
 }
@@ -116,8 +172,23 @@ function getAverageSpellDamage(character: CharacterModel): number {
 }
 
 function calculatePotentialHealing(character: CharacterModel): number {
-    const consumableHealing = character.items.reduce((sum, item) =>
-        sum + (item.heals ?? 0), 0);
+    const backpackItems = character.items.filter(item => {
+        const type = (item?.type ?? '').toLowerCase();
+        return type === 'consumable' || type === 'scroll';
+    });
+
+    const consumableHealing = backpackItems.reduce((sum, item) =>
+        sum + calculateCombatRating({
+            terms: {
+                heals: item.heals,
+                restores: item.restores,
+            },
+            weights: {
+                heals: 0.2,
+                restores: 0.15,
+            },
+            round: (value) => value,
+        }), 0);
 
     const spellHealing = character.spells.reduce((sum, spell) => {
         if ((spell.healsUser ?? 0) > 0) {
@@ -161,10 +232,9 @@ export function equipCharacter(character: CharacterModel, CRTarget: number, item
     if (items[0]?.typeid === 'weapon-bow-short') {
         items.push(itemFactory.createItem('ammo-arrows'));
     }
-    character.equippedItemTemplate ??= [];
-    items.forEach((item) => {
-        character.equippedItemTemplate?.push(item.typeid);
-    })
+    character.equippedItemTemplate = items
+        .map((item) => item.typeid)
+        .filter((typeid) => !!typeid);
     applyItemAcquisition(character, items, 100);
     applyCombatRatingCalculation(character);
 }

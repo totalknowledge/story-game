@@ -184,9 +184,6 @@ export class ConsoleService {
         return [`You are not carrying a "${itemName}".`];
     }
     const equipMessages = this.characterService.equipItem(player.id!, itemToEquip);
-    player.items = player.items.filter(inventoryItem => inventoryItem.id! !== itemToEquip.id!);
-    this.characterService.updateCharacter(player);
-
     return equipMessages;
 }
 

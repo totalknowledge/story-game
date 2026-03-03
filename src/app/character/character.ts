@@ -17,4 +17,8 @@ export class Character {
   isPlayer = computed(() => this.character().typeid === 'player');
 
   log = utilities.log;
+
+  canCastSpell(spell: { manaCost?: number }): boolean {
+    return this.character().currentMana >= (spell?.manaCost ?? 0);
+  }
 }

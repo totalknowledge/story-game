@@ -12,9 +12,9 @@ export class CombatEngineService {
   private characterService = inject(CharacterService);
   private readonly MISS_THRESHOLD = 10;
   private readonly CRITICAL_THRESHOLD = 95;
-  private readonly MANA_EFFECT_MULTIPLIER = 0.245;
-  private readonly MANA_TOHIT_MULTIPLIER = 0.2;
-  private readonly MANA_MISS_MULTIPLIER = 0.2;
+  private readonly MANA_EFFECT_MULTIPLIER = 0.19;
+  private readonly MANA_TOHIT_MULTIPLIER = 0.19;
+  private readonly MANA_MISS_MULTIPLIER = 0.19;
 
   attack(attacker: CharacterModel, defender: CharacterModel): string[] {
     const combatLog: string[] = [];
@@ -28,6 +28,8 @@ export class CombatEngineService {
     );
 
     if (this.isMiss(rawRoll, modifiedRoll)) {
+      this.consumeEquippedArrows(attacker, combatLog);
+      this.characterService.updateCharacter(attacker);
       combatLog.push(`${attacker.name} misses ${defender.name}.`);
       return combatLog;
     }
@@ -45,6 +47,8 @@ export class CombatEngineService {
       combatLog.push(`${defender.name} has been slain!`);
     }
 
+    this.consumeEquippedArrows(attacker, combatLog);
+    this.characterService.updateCharacter(attacker);
     this.characterService.updateCharacter(defender);
     return combatLog;
   }
@@ -151,5 +155,35 @@ export class CombatEngineService {
     }
 
     return [resultMessage];
+  }
+
+  private consumeEquippedArrows(attacker: CharacterModel, combatLog: string[]): void {
+    const equippedRightHand = attacker.equipment.get('right-hand') as ItemModel | undefined;
+    if (!equippedRightHand || equippedRightHand.typeid !== 'ammo-arrows') {
+      return;
+    }
+
+    const currentQuantity = equippedRightHand.quantity ?? 1;
+    const updatedQuantity = currentQuantity - 1;
+
+    if (updatedQuantity > 0) {
+      equippedRightHand.quantity = updatedQuantity;
+      return;
+    }
+
+    attacker.equipment.delete('right-hand');
+
+    const backpackArrowIndex = attacker.items.findIndex((item: ItemModel) =>
+      item?.typeid === 'ammo-arrows' && (item.quantity ?? 0) > 0
+    );
+
+    if (backpackArrowIndex === -1) {
+      return;
+    }
+
+    const replacementArrows = attacker.items[backpackArrowIndex] as ItemModel;
+    attacker.items.splice(backpackArrowIndex, 1);
+    attacker.equipment.set('right-hand', replacementArrows);
+    combatLog.push(`${attacker.name} equips another bundle of arrows.`);
   }
 }

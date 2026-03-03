@@ -1,6 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { ItemModel } from '../../item/item.model';
-import { SpellModel } from '../../spell/spell.model';
 
 export type TooltipDirection = 'right' | 'left' | 'top' | 'bottom';
 

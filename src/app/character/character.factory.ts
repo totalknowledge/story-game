@@ -84,6 +84,11 @@ export class CharacterFactory {
     const minimumSpellCount = Math.ceil((character.baseMana || 0) / 10);
     const existingSpellIds = new Set(character.spells.map(spell => spell.typeid));
 
+    if (character.typeid === 'player' && !existingSpellIds.has('spell-magic-missile')) {
+      character.spells.push(this.spellFactory.createSpell('spell-magic-missile'));
+      existingSpellIds.add('spell-shocking-grasp');
+    }
+
     if (characterTemplate?.spellTypeids && Array.isArray(characterTemplate.spellTypeids)) {
       characterTemplate.spellTypeids.forEach((spellId: string) => {
         if (!existingSpellIds.has(spellId)) {

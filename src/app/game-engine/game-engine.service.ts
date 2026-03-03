@@ -80,9 +80,23 @@ export class GameEngineService {
 
     if (!player) return ['Movement failed.'];
 
+    const enemiesBeforeMove = this.characterService.enemiesInRoomEntities();
+    const departureConnection = departingRoom?.connections?.get(moveDirection);
+    const isMapChange = !!departureConnection?.loads;
+
+    const followers = isMapChange
+      ? []
+      : enemiesBeforeMove.filter(enemy => !enemy.isDead && Math.random() < 0.6);
+
     if (departingRoom) {
+      const followerIds = new Set(followers.map(enemy => enemy.id));
+      const remainingEnemyIds = enemiesBeforeMove
+        .filter(enemy => !followerIds.has(enemy.id))
+        .map(enemy => enemy.id!)
+        .filter(Boolean);
+
       this.mapService.updateRoom(departingRoom.coordinateKey, {
-        enemyIds: this.characterService.enemiesInRoomEntities().map(character => character.id!)
+        enemyIds: remainingEnemyIds
       });
     }
 
@@ -97,7 +111,15 @@ export class GameEngineService {
       const roomHydration = this.movementEngine.processMovement(destinationRoom, mapTargetCR);
       destinationRoom.items = roomHydration.items;
       destinationRoom.features = roomHydration.features;
-      this.characterService.loadRoomCharacters(destinationRoom.enemyIds, roomHydration.enemies);
+
+      const destinationEnemyIds = [
+        ...(destinationRoom.enemyIds ?? []),
+        ...followers.map(enemy => enemy.id!).filter(Boolean)
+      ];
+
+      const uniqueDestinationEnemyIds = Array.from(new Set(destinationEnemyIds));
+
+      this.characterService.loadRoomCharacters(uniqueDestinationEnemyIds, roomHydration.enemies);
 
       this.rest(player);
       this.characterService.moveCharacter(destinationKey, player.id!);
@@ -116,8 +138,15 @@ export class GameEngineService {
         this.mapService.updateRoom(destinationKey, {
           items: roomHydration.items,
           features: roomHydration.features,
-          enemyIds: roomHydration.enemies.map(enemy => enemy.id!),
+          enemyIds: [
+            ...roomHydration.enemies.map(enemy => enemy.id!),
+            ...uniqueDestinationEnemyIds
+          ],
           visited: true
+        });
+      } else {
+        this.mapService.updateRoom(destinationKey, {
+          enemyIds: uniqueDestinationEnemyIds
         });
       }
     }
@@ -141,6 +170,18 @@ export class GameEngineService {
   take(player: CharacterModel, itemName: string): string[] {
     const room = this.mapService.currentRoom();
     if (!room) return ['You cannot take items here.'];
+
+    const roomItem = room.items.find(item =>
+      item.name.toLowerCase().includes(itemName.toLowerCase())
+    );
+    if (roomItem) {
+      const inventoryAcquired = this.characterService.acquireItem(player.id!, [roomItem]);
+      if (!inventoryAcquired) return ['Your inventory is full.'];
+
+      room.items = room.items.filter(item => item.id !== roomItem.id);
+      this.characterService.updateCharacter(player);
+      return [`You took ${roomItem.name}.`];
+    }
 
     const activeFeature = this.mapService.activeFeature();
     if (activeFeature) {
@@ -369,14 +410,17 @@ export class GameEngineService {
 
     this.mapService.loadMap('town', '0,0,0');
     this.characterService.moveCharacter('0,0,0', player.id!);
+    this.characterService.loadRoomCharacters([], []);
 
     this.mapService.updateRoom(currentRoom.coordinateKey, { items: currentRoom.items });
 
     messages.push('You have been revived, but your gear was damaged and dropped where you fell.');
 
     const templates = player.equippedItemTemplate || [];
-    templates.forEach((template: Partial<ItemModel>) => {
-      const newItem = new ItemModel(template);
+    templates.forEach((templateTypeid: Partial<ItemModel> | string) => {
+      if (typeof templateTypeid !== 'string' || !templateTypeid) return;
+
+      const newItem = this.itemFactory.createItem(templateTypeid);
       const equipRes = this.characterService.equipItem(player.id!, newItem);
       const didEquip = equipRes.some(m => m.toLowerCase().includes('equip'));
       if (!didEquip) {

@@ -77,6 +77,9 @@
                             <span class="opacity-60">{{ slot.label }}:</span>
                             <span class="truncate font-medium ml-1">
                                 {{ equippedItem?.name || '---' }}
+                                @if (equippedItem?.quantity && equippedItem.quantity > 1) {
+                                <span class="ml-1 opacity-70">x{{ equippedItem.quantity }}</span>
+                                }
                             </span>
                         </div>
                     </app-tooltip>
@@ -100,7 +103,9 @@
                             @for (spell of character().spells; track spell.typeid) {
                             <app-tooltip [entry]="spell" direction="top" widthClass="w-64">
                                 <div (click)="log(spell)"
-                                    class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
+                                    class="badge badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help"
+                                    [class.badge-primary]="canCastSpell(spell)"
+                                    [class.badge-neutral]="!canCastSpell(spell)">
                                     {{ spell.name }}
                                 </div>
                             </app-tooltip>
@@ -120,8 +125,11 @@
                         @for (inventoryItem of character().items; track inventoryItem.id) {
                         <app-tooltip [entry]="inventoryItem" direction="right">
                             <div (click)="log(inventoryItem)"
-                                class="badge badge-neutral text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
-                                {{ inventoryItem.name }}
+                                class="badge badge-neutral text-[10px] h-auto py-1 w-full justify-between cursor-help">
+                                <span class="truncate">{{ inventoryItem.name }}</span>
+                                @if (inventoryItem.quantity && inventoryItem.quantity > 1) {
+                                <span class="ml-2 opacity-70">x{{ inventoryItem.quantity }}</span>
+                                }
                             </div>
                         </app-tooltip>
                         } @empty {
@@ -136,7 +144,9 @@
                         @for (spell of character().spells; track spell.typeid) {
                         <app-tooltip [entry]="spell" direction="right">
                             <div (click)="log(spell)"
-                                class="badge badge-primary badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help">
+                                class="badge badge-outline text-[10px] h-auto py-1 w-full justify-start truncate cursor-help"
+                                [class.badge-primary]="canCastSpell(spell)"
+                                [class.badge-neutral]="!canCastSpell(spell)">
                                 {{ spell.name }}
                             </div>
                         </app-tooltip>

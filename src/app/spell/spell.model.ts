@@ -4,10 +4,11 @@ export class SpellModel {
     name: string;
     damage: number;
     manaCost: number;
-    school: string;
+    type: string;
     effect?: string;
     healsUser: number;
     castMessages: string[];
+    combatRating?: number;
 
     constructor(template: any = {}) {
         this.id = crypto.randomUUID();
@@ -15,7 +16,7 @@ export class SpellModel {
         this.name = template.name;
         this.damage = template.damage ?? 0;
         this.manaCost = template.manaCost ?? 0;
-        this.school = template.school || 'Arcane';
+        this.type = template.school || 'Arcane';
         this.effect = template.effect;
         this.healsUser = template.healsUser ?? 0;
         this.castMessages = Array.isArray(template.castMessages) ? template.castMessages : [];

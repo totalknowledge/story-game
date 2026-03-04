@@ -1,6 +1,6 @@
 import { CharacterModel } from '../character.model';
 import { ItemModel } from '../../item/item.model';
-import { rollDice } from '../../utilities/dice.definitions';
+import { d100, rollDice } from '../../utilities/dice.definitions';
 import { ItemFactory } from '../../item/item.factory';
 import { calculateCombatRating } from '../../utilities/combat.definitions';
 
@@ -204,12 +204,45 @@ function calculatePotentialHealing(character: CharacterModel): number {
 export function equipCharacter(character: CharacterModel, CRTarget: number, itemFactory: ItemFactory, characterTemplate?: any): void {
     let items: ItemModel[] = [];
 
+    if (character.typeid === 'player') {
+        const shortBow = itemFactory.createItem('weapon-bow-short');
+        const arrows = itemFactory.createItem('ammo-arrows');
+        arrows.quantity = 20;
+        const cheeseWheel = itemFactory.createItem('food-cheese');
+
+        items = [shortBow, arrows, cheeseWheel];
+
+        character.equippedItemTemplate = items
+            .map((item) => item.typeid)
+            .filter((typeid) => !!typeid);
+
+        applyItemAcquisition(character, items, 100);
+        applyCombatRatingCalculation(character);
+        return;
+    }
+
     if (characterTemplate?.equippedItemTemplate) {
         characterTemplate.equippedItemTemplate?.forEach((item: Partial<ItemModel>) => {
             items.push(new ItemModel(item));
         });
     } else {
         items.push(itemFactory.createRandomItem(['Weapon']));
+    }
+
+    const isHumanoid = (character.type === 'Humanoid' || character.type === 'Undead');
+    const shouldGenerateHumanoidWeapon = isHumanoid && d100() <= 80;
+
+    if (shouldGenerateHumanoidWeapon) {
+        const generatedWeapon = itemFactory.createRandomItem(['Weapon'], CRTarget);
+        const naturalWeaponIndex = items.findIndex(item =>
+            item?.equippableLocation === 'right-hand' && item?.type === 'Natural'
+        );
+
+        if (naturalWeaponIndex >= 0) {
+            items[naturalWeaponIndex] = generatedWeapon;
+        } else {
+            items.push(generatedWeapon);
+        }
     }
 
     let lootCount = rollDice(1, Math.ceil(character.maxHealth / 10));

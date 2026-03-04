@@ -25,8 +25,8 @@ describe('Admin', () => {
     component.activeTab = 'items';
     component.items = [
       { typeid: 'b-1', type: 'Weapon', name: 'Beta Blade', damage: 8 },
-      { typeid: 'a-1', type: 'Consumable', name: 'Apple Tonic', heals: 5 },
-      { typeid: 'a-2', type: 'Consumable', name: 'Berry Tonic', heals: 10 },
+      { typeid: 'a-1', type: 'Consumable', name: 'Apple Tonic', heals: 5, baseCr: 1 },
+      { typeid: 'a-2', type: 'Consumable', name: 'Berry Tonic', heals: 10, baseCr: 2 },
       { typeid: 'b-2', type: 'Weapon', name: 'Alpha Blade', damage: 8 },
     ];
 
@@ -56,6 +56,19 @@ describe('Admin', () => {
 
   it('normalizes add-row input types to match schema', () => {
     component.activeTab = 'items';
+    component.items = [
+      {
+        typeid: 'schema-row',
+        name: 'Schema Row',
+        type: 'Consumable',
+        quantity: 1,
+        excludeFromRandom: false,
+        useMessages: [],
+        teaches: [],
+        heals: 1,
+      }
+    ];
+
     component.newData = {
       typeid: 'custom-item',
       name: 'Custom Item',

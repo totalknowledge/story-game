@@ -20,6 +20,11 @@ describe('GameEngineService', () => {
 
   it('refreshes store inventory when reentering a visited room', () => {
     const mapService = TestBed.inject(MapService);
+    const characterService = TestBed.inject(CharacterService);
+    const refreshSpy = vi.spyOn(service as any, 'refreshStoreInventory');
+
+    const player = characterService.spawnCharacter('player');
+    characterService.moveCharacter('room-a', player.id!);
 
     const storeFeature: any = {
       type: 'Store',
@@ -32,6 +37,8 @@ describe('GameEngineService', () => {
 
     const roomA: any = {
       coordinateKey: 'room-a',
+      description: 'Room A',
+      directions: [],
       features: [storeFeature],
       items: [],
       enemyIds: [],
@@ -41,6 +48,8 @@ describe('GameEngineService', () => {
 
     const roomB: any = {
       coordinateKey: 'room-b',
+      description: 'Room B',
+      directions: [],
       features: [],
       items: [],
       enemyIds: [],
@@ -52,13 +61,34 @@ describe('GameEngineService', () => {
     mapService['currentMap']()?.rooms.set(roomB.coordinateKey, roomB);
     mapService['currentRoomCoords'].set(roomA.coordinateKey);
 
-    const initialItems = storeFeature.items.map((i: any) => ({ ...i }));
-
     expect(service.movePlayer('north').length).toBeGreaterThan(0);
 
     service.movePlayer('south');
 
-    expect(storeFeature.items[storeFeature.items.legnth -1]?.id).not.toEqual(initialItems[initialItems.length-1]?.id);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes natural items from store during refresh before repopulating', () => {
+    const itemFactory = TestBed.inject(ItemFactory);
+
+    vi.spyOn(itemFactory, 'createRandomItem').mockReturnValue(new ItemModel({
+      typeid: 'weapon-test-sword',
+      name: 'Test Sword',
+      type: 'Weapon',
+      equippableLocation: 'mainhand'
+    }));
+
+    const storeFeature: any = {
+      type: 'Store',
+      items: [
+        { id: 'sold-natural-1', name: 'Carapace', type: 'Natural' },
+        { id: 'sold-weapon-1', name: 'Iron Dagger', type: 'Weapon' }
+      ]
+    };
+
+    (service as any).refreshStoreInventory(storeFeature);
+
+    expect(storeFeature.items.some((item: any) => item.type === 'Natural')).toBe(false);
   });
 
   it('clears enemies in room when reviving', () => {
@@ -80,7 +110,10 @@ describe('GameEngineService', () => {
       id: 'player-1',
       equipment: new Map(),
       items: [],
+      spells: [],
       dead: true,
+      baseHealth: 20,
+      baseMana: 10,
       damage: 5,
       usedMana: 3,
       equippedItemTemplate: []
@@ -109,7 +142,10 @@ describe('GameEngineService', () => {
       id: 'player-1',
       equipment: new Map(),
       items: [],
+      spells: [],
       dead: true,
+      baseHealth: 20,
+      baseMana: 10,
       damage: 5,
       usedMana: 3,
       equippedItemTemplate: ['weapon-sword']

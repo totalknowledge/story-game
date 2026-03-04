@@ -177,10 +177,10 @@ describe('ItemModel', () => {
         teaches: ['a', 'b'],
       });
 
-      const physicalPower = 2 + 3 + 10; // 15
-      const defensivePower = 4 + (25 / 10) + (2 * 2); // 4 + 2.5 + 4 = 10.5
+      const physicalPower = 2 + 3 + 10;
+      const defensivePower = (4 * 0.5) + (25 / 10) + (2 * 2); // 2 + 2.5 + 4 = 8.5
       const utilityPower = ((10 / 10) * 3) + (2 * 5) + (30 * 0.01) + (20 * 0.008); // 3 + 10 + 0.3 + 0.16 = 13.46
-      const expected = Math.ceil(physicalPower + defensivePower + utilityPower); // ceil(38.96) = 39
+      const expected = Math.ceil(physicalPower + defensivePower + utilityPower); // ceil(36.96) = 37
 
       expect(item.combatRating).toBe(expected);
     });

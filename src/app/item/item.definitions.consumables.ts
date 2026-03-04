@@ -126,7 +126,7 @@ export const CONSUMABLES = [
         "type": "Consumable",
         "equippableLocation": "none",
         "quality": "standard",
-        "restors": 3,
+        "restores": 3,
         "useMessages": [
             "{user} drinks {item} and recovers {value} mana."
         ]

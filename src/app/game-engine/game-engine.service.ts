@@ -155,6 +155,8 @@ export class GameEngineService {
   }
 
   private refreshStoreInventory(store: any): void {
+    store.items = (store.items ?? []).filter((item: ItemModel) => item?.type !== 'Natural');
+
     const removeCount = d10();
     for (let i = 0; i < removeCount && store.items.length > 0; i++) {
       const idx = Math.floor(Math.random() * store.items.length);

@@ -52,7 +52,8 @@ describe('Character Rules', () => {
                 typeid: 'consumable-potion',
                 name: 'Potion',
                 type: 'Consumable',
-                heals: 20,
+                heals: 400,
+                restores: 200,
                 equippableLocation: 'none'
             });
 

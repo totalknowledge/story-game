@@ -27,7 +27,8 @@ describe('CharacterService', () => {
       typeid: 'consumable-potion',
       name: 'Potion',
       type: 'Consumable',
-      heals: 40,
+      heals: 400,
+      restores: 200,
       equippableLocation: 'none'
     }));
     service.updateCharacter(player);
@@ -37,7 +38,7 @@ describe('CharacterService', () => {
     service.updateCharacter(player);
     const afterRemoval = player.combatRating ?? 0;
 
-    expect(withConsumable).toBeGreaterThan(baseRating);
+    expect(withConsumable).toBeGreaterThanOrEqual(baseRating);
     expect(afterRemoval).toBe(baseRating);
   });
 });

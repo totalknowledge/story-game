@@ -47,7 +47,7 @@ describe('InteractionEngineService', () => {
 
     const potion = new ItemModel({
       typeid: 'potion-health',
-      name: 'Health Potion',
+      name: 'Test Health Potion',
       type: 'Consumable',
       equippableLocation: 'none',
       heals: 5,
@@ -57,7 +57,7 @@ describe('InteractionEngineService', () => {
 
     player.items.push(potion);
 
-    service.use(player, 'health potion');
+    service.use(player, 'test health potion');
 
     expect(player.items.some(item => item.id === potion.id)).toBe(false);
   });

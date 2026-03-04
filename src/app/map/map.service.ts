@@ -165,11 +165,36 @@ export class MapService {
   }
 
   public resetMap(mapName: string): string[] {
-    this.maps.delete(mapName);
-    const currentMapName = Array.from(this.maps.entries()).find(([_, m]) => m === this.currentMap())?.[0];
-    if (currentMapName === mapName) {
-      this.loadMap(mapName, '0,0,0');
+    const mapKey = this.resolveMapKey(mapName);
+    if (!mapKey) return [`No map found for "${mapName}".`];
+
+    const currentMapKey = this.getCurrentMapKey();
+    this.maps.delete(mapKey);
+
+    if (currentMapKey === mapKey) {
+      this.loadMap(mapKey, '0,0,0');
     }
-    return [`The ${mapName} has been reset.`];
+
+    const displayName = WORLD_MAPS[mapKey]?.['name'] ?? mapName;
+    return [`${displayName} has been reset.`];
+  }
+
+  private getCurrentMapKey(): string | undefined {
+    return Array.from(this.maps.entries()).find(([_, map]) => map === this.currentMap())?.[0];
+  }
+
+  private resolveMapKey(mapName: string): string | undefined {
+    const normalizedInput = mapName.trim().toLowerCase();
+    if (!normalizedInput) return undefined;
+
+    const exactKeyMatch = Object.keys(WORLD_MAPS).find(key => key.toLowerCase() === normalizedInput);
+    if (exactKeyMatch) return exactKeyMatch;
+
+    const exactNameMatch = Object.entries(WORLD_MAPS)
+      .find(([_, definition]) => definition['name'].toLowerCase() === normalizedInput)?.[0];
+    if (exactNameMatch) return exactNameMatch;
+
+    return Object.entries(WORLD_MAPS)
+      .find(([_, definition]) => definition['name'].toLowerCase().includes(normalizedInput))?.[0];
   }
 }

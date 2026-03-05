@@ -4,7 +4,7 @@ import { MapModel } from './map.model';
 import { RoomModel } from './room/room.model';
 import { RoomFactory } from './room/room.factory';
 import { Direction, ROOM_TEMPLATES, Connection, COORDINATE_OFFSETS, REVERSE_DIRECTIONS, DIRECTIONS, Coordinates } from './room/room.definitions';
-import { pickRandom, rollDice, shuffleInPlace } from '../utilities/dice.definitions';
+import { d10, d100, pickRandom, rollDice, shuffleInPlace } from '../utilities/dice.definitions';
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +34,10 @@ export class MapFactory {
     const enemyPool = mapDefinition['enemyTypes'] || [];
     if (enemyPool.length === 0) return [];
 
-    const spawnCount = Math.max(0, rollDice(1, 5) - 2);
+    const baseChance = mapDefinition['encounterChance'] || 0;
+    const encounterRolls = [d100(), d100(), d100()];
+    const spawnCount = encounterRolls.reduce((count, roll) => count + (roll <= (baseChance + d10(2)) ? 1 : 0), 0);
+
     const selectedTypes: string[] = [];
 
     for (let i = 0; i < spawnCount; i++) {
@@ -54,6 +57,10 @@ export class MapFactory {
 
       if (template) {
         const room = this.roomFactory.generateRoom(template, { coordinateKey: roomCoordinates });
+
+        if (Array.isArray(roomConfiguration.featureTypeids)) {
+          room.featureTypeids = [...roomConfiguration.featureTypeids];
+        }
 
         if (roomConfiguration.mapConnections) {
           roomConfiguration.mapConnections.forEach((externalEntry: any) => {
@@ -101,6 +108,11 @@ export class MapFactory {
       if (roomTemplate) {
         const room = this.roomFactory.generateRoom(roomTemplate, { coordinateKey });
         room.enemyTypeids = this.generateEnemyTypeIds(mapDefinition);
+
+        if (Array.isArray(roomConfiguration.featureTypeids)) {
+          room.featureTypeids = [...roomConfiguration.featureTypeids];
+        }
+
         if (roomConfiguration.mapConnections) {
           roomConfiguration.mapConnections.forEach((externalEntry: any) => {
             const { direction, ...connectionDetails } = externalEntry;
@@ -162,7 +174,20 @@ export class MapFactory {
       }
     }
 
+    this.placeRandomFeatures(roomMap, mapDefinition['randomFeatures'] || []);
+    console.log(roomMap);
     return roomMap;
+  }
+
+  private placeRandomFeatures(roomMap: Map<string, RoomModel>, randomFeatures: string[]): void {
+    if (!Array.isArray(randomFeatures) || randomFeatures.length === 0) return;
+    const candidateKeys = Array.from(roomMap.keys());
+
+    randomFeatures.forEach((featureTypeid: string) => {
+      const selectedIndex = pickRandom(candidateKeys);
+      const selectedRoom = roomMap.get(selectedIndex);
+      selectedRoom!.featureTypeids = [featureTypeid];
+    });
   }
 
   private calculateNeighborKey(coordinates: Coordinates, direction: Direction): string {

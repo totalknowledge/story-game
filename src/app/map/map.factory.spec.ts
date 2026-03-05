@@ -33,6 +33,7 @@ describe('MapFactory', () => {
     type: 'dungeon',
     generator: 'random',
     rooms: 5,
+    randomFeatures: ['feature-hidden-cache'],
     randomRooms: ['cave-room'],
     structure: {
       '0,0,0': {
@@ -116,6 +117,14 @@ describe('MapFactory', () => {
         const [x, y, z] = key.split(',').map(Number);
         expect(room.coordinates).toEqual({ x, y, z });
       });
+    });
+
+    it('should place randomFeatures into one of the generated rooms', () => {
+      const map = factory.generateMap(mockRandomDefinition);
+      const rooms = Array.from(map.rooms.values());
+
+      const hasHiddenCache = rooms.some(room => room.featureTypeids.includes('feature-hidden-cache'));
+      expect(hasHiddenCache).toBe(true);
     });
   });
 

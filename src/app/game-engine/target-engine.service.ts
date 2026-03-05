@@ -100,14 +100,19 @@ export class TargetingEngine {
     const enemies: CharacterModel[] = [];
     const allies: CharacterModel[] = [];
 
-    const isPlayerActor = actor.typeid === 'player';
+    const isPlayerActor = actor.typeid.startsWith('player');
 
     allCharacters.forEach(char => {
       if (char.id === actor.id) {
         allies.push(char);
-      } else if (isPlayerActor && char.typeid === 'player') {
+        return;
+      }
+
+      const isCharPlayer = char.typeid.startsWith('player');
+
+      if (isPlayerActor && isCharPlayer) {
         allies.push(char);
-      } else if (!isPlayerActor && char.typeid !== 'player') {
+      } else if (!isPlayerActor && !isCharPlayer) {
         allies.push(char);
       } else {
         enemies.push(char);

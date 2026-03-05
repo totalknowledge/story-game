@@ -23,6 +23,8 @@ export class ItemModel {
     useMessages: string[] = [];
     teaches: string[] = [];
     baseCost: number;
+    public maxStack?: number;
+    unlocks?: string[];
 
     constructor(template: any = {}) {
         this.id = crypto.randomUUID();
@@ -44,10 +46,11 @@ export class ItemModel {
         this.quantity = template.quantity;
         this.quality = template.quality ?? 'standard';
         this.excludeFromRandom = template.excludeFromRandom ?? false;
+        this.unlocks = template.unlocks ?? [];
 
         this.useMessages = Array.isArray(template.useMessages) ? template.useMessages : [];
         this.teaches = Array.isArray(template.teaches) ? template.teaches : [];
-
+        this.maxStack = template.maxStack;
         this.baseCost = template.baseCost ?? 1;
     }
 
@@ -85,6 +88,7 @@ export class ItemModel {
     }
 
     public get cost(): number {
+        if (this.typeid === 'ammo-arrows') return 1 * this.quantity!;
         const baseCost = (this.combatRating + this.baseCost) * (this.quantity ?? 1);
         switch (this.quality) {
             case 'damaged':

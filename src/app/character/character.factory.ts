@@ -25,23 +25,27 @@ export class CharacterFactory {
     );
 
     this.seedSpells(character, characterTemplate);
-    const crTarget = type === 'player' ? 9 : (targetCR ?? 9);
+    const crTarget = ['player-male', 'player-female'].includes(type) ? 9 : (targetCR ?? 9);
     equipCharacter(character, crTarget, this.itemFactory, characterTemplate);
 
     return character;
   }
 
   private buildTemplate(type: string, name?: string): any {
-    const characterName = name ?? (type === 'player'
-      ? this.nameService.getHeroName('male').name
-      : this.nameService.getEnemyName().name);
+    const nameGender = (type === 'player'
+      ? this.nameService.getHeroName()
+      : this.nameService.getEnemyName());
 
     if (type === 'player') {
       return {
-        name: characterName,
+        name: name ?? nameGender.name,
         baseHealth: 20,
         baseMana: 10,
-        typeid: 'player'
+        typeid: 'player-' + nameGender.gender,
+        equippedItemTemplate: [
+          this.itemFactory.createItem('weapon-bow-short'),
+          (() => { const c = this.itemFactory.createItem('food-cheese'); c.quantity = 1; return c; })()
+        ]
       };
     }
 
@@ -57,7 +61,7 @@ export class CharacterFactory {
     if (classification === 'unique') {
       characterTemplate = {
         ...characterTemplate,
-        name: characterName,
+        name: nameGender.name,
         baseHealth: Math.round(characterTemplate.baseHealth * 1.3),
         baseMana: Math.round(characterTemplate.baseMana * 1.3),
         named: true,
@@ -84,8 +88,8 @@ export class CharacterFactory {
     const minimumSpellCount = Math.ceil((character.baseMana || 0) / 10);
     const existingSpellIds = new Set(character.spells.map(spell => spell.typeid));
 
-    if (character.typeid === 'player' && !existingSpellIds.has('spell-magic-missile')) {
-      character.spells.push(this.spellFactory.createSpell('spell-magic-missile'));
+    if (['player-male', 'player-female'].includes(characterTemplate?.typeid)) {
+      character.spells.push(this.spellFactory.createSpell('spell-shocking-grasp'));
       existingSpellIds.add('spell-shocking-grasp');
     }
 

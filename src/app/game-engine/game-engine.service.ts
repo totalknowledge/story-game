@@ -69,6 +69,10 @@ export class GameEngineService {
       viewLines.push("Items:", ...currentRoom.items.map(i => ` - ${i.name}`));
     }
 
+    if (currentRoom.features.length > 0) {
+      viewLines.push("Features:", ...currentRoom.features.map((feature: any) => ` - ${feature.name}`));
+    }
+
     viewLines.push(...currentRoom.directions);
     return viewLines;
   }

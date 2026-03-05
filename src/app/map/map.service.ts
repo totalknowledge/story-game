@@ -119,7 +119,7 @@ export class MapService {
     this.currentRoomCoords.set(initialCoordinates);
 
     const startRoom = mapModel.rooms.get(initialCoordinates);
-    if (startRoom) startRoom.visited = true;
+    if (startRoom && mapDefinition['generator'] !== 'random') startRoom.visited = true;
   }
 
   public move(direction: Direction): string[] {
@@ -162,6 +162,29 @@ export class MapService {
 
       return { ...mapState, rooms: roomsRegistry };
     });
+  }
+
+  public unlockAdjacentPaths(unlocks: string[]): { unlocked: boolean; message: string } {
+    const room = this.currentRoom();
+    if (!room || !Array.isArray(unlocks) || unlocks.length === 0) {
+      return { unlocked: false, message: 'Nothing nearby can be unlocked with that.' };
+    }
+
+    for (const [direction, connection] of room.connections.entries()) {
+      if (!connection.loads) continue;
+      if (connection.status !== 'locked') continue;
+      if (!unlocks.includes(connection.loads)) continue;
+
+      connection.status = 'unlocked';
+      this.updateRoom(room.coordinateKey, { connections: room.connections });
+
+      return {
+        unlocked: true,
+        message: `You unlock ${connection.name ?? `the ${direction} path`}.`
+      };
+    }
+
+    return { unlocked: false, message: 'Nothing nearby can be unlocked with that.' };
   }
 
   public resetMap(mapName: string): string[] {

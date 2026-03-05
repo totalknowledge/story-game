@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { CharacterModel } from './character.model';
 import { ItemModel } from '../item/item.model';
-import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation, applyEquipItem } from './rules/character.rules';
+import { applyItemAcquisition, applyBonusCalculation, applyCombatRatingCalculation, applyEquipItem, stackConsumableItem } from './rules/character.rules';
 import { CharacterFactory } from './character.factory';
 
 @Injectable({
@@ -26,12 +26,10 @@ export class CharacterService {
     let acquiredAny = acquired;
 
     if (isPlayerCharacter && naturalItems.length > 0) {
-      naturalItems.forEach(item => {
-        if (character.items.length < this.MAX_BACKPACK_SIZE) {
-          character.items.push(item);
-          acquiredAny = true;
-        }
-      });
+      for (const natItem of naturalItems) {
+        const stacked = stackConsumableItem(character, natItem, this.MAX_BACKPACK_SIZE);
+        acquiredAny = acquiredAny || stacked;
+      }
     }
 
     if (acquiredAny) {

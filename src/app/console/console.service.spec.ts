@@ -32,13 +32,13 @@ describe('ConsoleService', () => {
 
   it('allows dropping an item from inventory', () => {
     const player = charService.spawnCharacter('player');
-    const apple = new ItemModel({ name: 'Shiney Apple', typeid: 'apple', type: 'consumable' });
+    const apple = new ItemModel({ name: 'Shiny Apple', typeid: 'apple', type: 'consumable' });
 
     charService.acquireItem(player.id!, [apple]);
     expect(player.items).toContain(apple);
 
     const result = (service as any).handleDrop('apple');
-    expect(result).toEqual(['You dropped Shiney Apple.']);
+    expect(result).toEqual(['You dropped Shiny Apple.']);
     expect(player.items).not.toContain(apple);
     expect(mapService.currentRoom()?.items).toContain(apple);
   });

@@ -103,6 +103,13 @@ export class InteractionEngineService {
   private resolveItemUsage(actor: CharacterModel, item: ItemModel, charactersInRoom: CharacterModel[] = []): string[] {
     const interactionLog: string[] = [];
 
+    if (item.unlocks && item.unlocks.length > 0) {
+      const unlockResult = this.mapService.unlockAdjacentPaths(item.unlocks);
+      interactionLog.push(unlockResult.message);
+      this.characterService.updateCharacter(actor);
+      return interactionLog;
+    }
+
     switch (item.type) {
       case 'Consumable':
         interactionLog.push(...this.applyConsumableEffects(actor, item));

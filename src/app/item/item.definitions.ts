@@ -21,6 +21,18 @@ export const ITEM_TEMPLATES = [
             "{user} uses {item} to attack."
         ]
     },
+    {
+        "typeid": "material-hide",
+        "name": "Hide",
+        "type": "Material",
+        "equippableLocation": "none",
+        "quality": "standard",
+        "quantity": 1,
+        "maxStack": 20,
+        "useMessages": [
+            "{user} collects {item}."
+        ]
+    },
     ...ARMOR,
     {
         "typeid": "trinket-ring",
@@ -63,6 +75,18 @@ export const ITEM_TEMPLATES = [
         "plusArmor": 1,
         "useMessages": [
             "{user} lights {item}. Shadows retreat slightly."
+        ]
+    },
+    {
+        "typeid": "key-catacombs",
+        "name": "Key to the Catacombs",
+        "type": "Utility",
+        "equippableLocation": "none",
+        "quality": "standard",
+        "excludeFromRandom": true,
+        "unlocks": ["crypts-01"],
+        "useMessages": [
+            "{user} uses {item}."
         ]
     },
     {

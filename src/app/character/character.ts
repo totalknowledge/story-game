@@ -14,7 +14,7 @@ export class Character {
   character = input.required<CharacterModel>();
   equipementSlots = EQUPEMENT_SLOTS;
 
-  isPlayer = computed(() => this.character().typeid === 'player');
+  isPlayer = computed(() => this.character().typeid === 'player-male' || this.character().typeid === 'player-female');
 
   log = utilities.log;
 

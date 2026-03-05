@@ -60,7 +60,7 @@ export function applyItemAcquisition(
     let acquired = false;
 
     for (const item of items) {
-        if (item.type === 'Consumable') {
+        if ((item.maxStack ?? 0) > 1 || item.type === 'Consumable') {
             const stacked = stackConsumableItem(character, item, maxBackpackSize);
             acquired = acquired || stacked;
             continue;
@@ -84,18 +84,18 @@ export function applyItemAcquisition(
     return { updatedCharacter: character, acquired };
 }
 
-function stackConsumableItem(character: CharacterModel, item: ItemModel, maxBackpackSize: number): boolean {
+export function stackConsumableItem(character: CharacterModel, item: ItemModel, maxBackpackSize: number): boolean {
+    const stackMax = item.maxStack ?? 5;
     let remainingQuantity = Math.max(1, item.quantity ?? 1);
 
     const matchingStacks = character.items.filter((inventoryItem: ItemModel) =>
-        inventoryItem?.type === 'Consumable' &&
         inventoryItem?.typeid === item.typeid &&
-        (inventoryItem.quantity ?? 1) < 5
+        (inventoryItem.quantity ?? 1) < (inventoryItem.maxStack ?? stackMax)
     );
 
     for (const stack of matchingStacks) {
         const currentStackQuantity = stack.quantity ?? 1;
-        const availableSpace = 5 - currentStackQuantity;
+        const availableSpace = (stack.maxStack ?? stackMax) - currentStackQuantity;
         if (availableSpace <= 0) continue;
 
         const transferAmount = Math.min(availableSpace, remainingQuantity);
@@ -109,10 +109,8 @@ function stackConsumableItem(character: CharacterModel, item: ItemModel, maxBack
 
     let addedAny = false;
     while (remainingQuantity > 0 && character.items.length < maxBackpackSize) {
-        const stackQuantity = Math.min(5, remainingQuantity);
-        const stackItem = addedAny
-            ? new ItemModel({ ...item, quantity: stackQuantity })
-            : item;
+        const stackQuantity = Math.min(stackMax, remainingQuantity);
+        const stackItem = new ItemModel({ ...item, quantity: stackQuantity });
 
         stackItem.quantity = stackQuantity;
         character.items.push(stackItem);
@@ -204,23 +202,6 @@ function calculatePotentialHealing(character: CharacterModel): number {
 export function equipCharacter(character: CharacterModel, CRTarget: number, itemFactory: ItemFactory, characterTemplate?: any): void {
     let items: ItemModel[] = [];
 
-    if (character.typeid === 'player') {
-        const shortBow = itemFactory.createItem('weapon-bow-short');
-        const arrows = itemFactory.createItem('ammo-arrows');
-        arrows.quantity = 20;
-        const cheeseWheel = itemFactory.createItem('food-cheese');
-
-        items = [shortBow, arrows, cheeseWheel];
-
-        character.equippedItemTemplate = items
-            .map((item) => item.typeid)
-            .filter((typeid) => !!typeid);
-
-        applyItemAcquisition(character, items, 100);
-        applyCombatRatingCalculation(character);
-        return;
-    }
-
     if (characterTemplate?.equippedItemTemplate) {
         characterTemplate.equippedItemTemplate?.forEach((item: Partial<ItemModel>) => {
             items.push(new ItemModel(item));
@@ -229,23 +210,10 @@ export function equipCharacter(character: CharacterModel, CRTarget: number, item
         items.push(itemFactory.createRandomItem(['Weapon']));
     }
 
-    const isHumanoid = (character.type === 'Humanoid' || character.type === 'Undead');
-    const shouldGenerateHumanoidWeapon = isHumanoid && d100() <= 80;
-
-    if (shouldGenerateHumanoidWeapon) {
-        const generatedWeapon = itemFactory.createRandomItem(['Weapon'], CRTarget);
-        const naturalWeaponIndex = items.findIndex(item =>
-            item?.equippableLocation === 'right-hand' && item?.type === 'Natural'
-        );
-
-        if (naturalWeaponIndex >= 0) {
-            items[naturalWeaponIndex] = generatedWeapon;
-        } else {
-            items.push(generatedWeapon);
-        }
-    }
-
     let lootCount = rollDice(1, Math.ceil(character.maxHealth / 10));
+    if ((characterTemplate?.typeid ?? '').startsWith('player')) {
+        lootCount = 0;
+    }
     if (character.classification === 'elite') {
         lootCount++;
     } else if (character.classification === 'unique') {

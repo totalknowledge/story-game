@@ -59,8 +59,12 @@ export class CombatEngineService {
 
     caster.usedMana += spell.manaCost;
 
-    const castMessage = spell.castMessages[0].replace('{user}', caster.name);
-    combatLog.push(castMessage);
+    const castTemplate = spell.castMessages[0];
+
+    const hasTargetPlaceholder = castTemplate.includes('{target}');
+    const userReplacedTemplate = castTemplate.replace('{user}', caster.name);
+
+    combatLog.push(userReplacedTemplate);
 
     if (spell.effect === 'heal') {
       const healAmount = rollDice(1, spell.healsUser || 0) + bonusEffect;
@@ -69,6 +73,11 @@ export class CombatEngineService {
     } else {
       enemies.forEach((target, index) => {
         const isHalfDamage = index > 0 && spell.effect === 'additional-target';
+
+        if (hasTargetPlaceholder) {
+          combatLog.push(userReplacedTemplate.replace('{target}', target.name));
+        }
+
         combatLog.push(...this.resolveSpellEffect(caster, target, spell, isHalfDamage));
         this.characterService.updateCharacter(target);
       });

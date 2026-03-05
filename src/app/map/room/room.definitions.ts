@@ -277,4 +277,40 @@ export const ROOM_TEMPLATES: Partial<RoomModel>[] = [
         typeid: 'cave-001',
         description: 'Darkness closes around you, you hear the faint trickle of water.',
     },
+    {
+        typeid: 'cave-002',
+        description: 'A narrow passage funnels into a small chamber with stalactites dripping steadily.',
+    },
+    {
+        typeid: 'cave-003',
+        description: 'A low ceiling tunnel opens into a cavernous room where the echoes make it hard to tell distance.',
+    },
+    {
+        typeid: 'cave-004',
+        description: 'A crystalline pool reflects the faint light; the water is unnaturally still.',
+    },
+    {
+        typeid: 'cave-005',
+        description: 'The rock here is slick and worn, with ancient scratch marks along the walls.',
+    },
+    {
+        typeid: 'crypt-001',
+        description: 'A narrow vaulted corridor lined with alcoves; the air is cold and carries a faint scent of incense.',
+    },
+    {
+        typeid: 'crypt-002',
+        description: 'An antechamber with stone sarcophagi and faded murals depicting funerary rites.',
+    },
+    {
+        typeid: 'crypt-003',
+        description: 'A circular tomb room with a cracked censer in the center and dust motes swirling in the dim light.',
+    },
+    {
+        typeid: 'crypt-004',
+        description: 'A low, claustrophobic passage where the floor is uneven and bones peek from the cracks.',
+    },
+    {
+        typeid: 'crypt-005',
+        description: 'A chamber marked by carved runes and small offerings on a stone ledge; the shadows here feel heavy.',
+    },
 ];

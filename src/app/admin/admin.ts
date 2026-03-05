@@ -120,7 +120,6 @@ export class Admin {
       }
     }
 
-    console.log(row);
     return row[column] ?? '';
   }
 

@@ -17,6 +17,22 @@ export class FeatureFactory {
 
     const feature = new FeatureModel(template);
 
+    if (Array.isArray(template.items) && template.items.length > 0) {
+      feature.items = template.items
+        .map((entry: any) => {
+          if (typeof entry === 'string') {
+            return this.itemFactory.createItem(entry);
+          }
+
+          if (entry?.typeid) {
+            return this.itemFactory.createItem(entry.typeid);
+          }
+
+          return undefined;
+        })
+        .filter(Boolean) as any[];
+    }
+
     if (template.type === 'Store' && feature.items.length === 0) {
       this.populateStoreInventory(feature);
     }

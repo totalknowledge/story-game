@@ -39,6 +39,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "type": "Beast",
@@ -61,6 +62,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "type": "Beast",
@@ -163,6 +165,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "type": "Beast",
@@ -279,6 +282,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [
@@ -304,6 +308,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [],
@@ -386,6 +391,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [],
@@ -425,6 +431,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [],
@@ -448,6 +455,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [],
@@ -471,6 +479,7 @@ export const ENEMY_TEMPLATES: Partial<CharacterModel>[] = [
             "name": "Hide",
             "type": "Natural",
             "plusArmor": 5,
+            "maxStack": 5,
             "equippableLocation": "body"
         }],
         "spellTypeids": [],

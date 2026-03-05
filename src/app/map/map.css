@@ -60,8 +60,6 @@
 .map-marker {
     line-height: 1;
 }
-
-/* Exit "breaks" in the outline */
 .map-cell--open-north {
     border-top-color: transparent;
 }
@@ -77,8 +75,6 @@
 .map-cell--open-west {
     border-left-color: transparent;
 }
-
-/* Legend */
 .map-legend {
     display: flex;
     gap: calc(1rem * var(--map-scale));

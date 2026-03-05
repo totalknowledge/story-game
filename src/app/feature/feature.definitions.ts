@@ -49,5 +49,13 @@ export const FEATURE_TEMPLATES = [
         interactable: true,
         description: 'A massive stone forge with glowing embers.',
         items: []
+    },
+    {
+        typeid: 'feature-hidden-cache',
+        name: 'Hidden Cache',
+        type: 'Chest',
+        description: 'A concealed stash tucked into the cave wall.',
+        interactable: true,
+        items: ['key-catacombs']
     }
 ];

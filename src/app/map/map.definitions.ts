@@ -6,7 +6,8 @@ export type MapDefinition = Record<string, any>;
 export type RoomDefinition = {
     room: string,
     connections: Direction[],
-    mapConnections: Connection[]
+    mapConnections: Connection[],
+    featureTypeids?: string[]
 }
 
 export const WORLD_MAPS: Record<string, MapDefinition> = {
@@ -15,6 +16,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
         name: 'The Caves',
         generator: 'random',
         features: 1,
+        randomFeatures: ['feature-hidden-cache'],
         featureTypes: [],
         targetCR: 9,
         encounterChance: 15,
@@ -27,7 +29,11 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
         ],
         rooms: 15,
         randomRooms: [
-            'cave-001'
+            'cave-001',
+            'cave-002',
+            'cave-003',
+            'cave-004',
+            'cave-005'
         ],
         structure: {
             '0,0,0': {
@@ -54,7 +60,11 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
         ],
         rooms: 30,
         randomRooms: [
-            'cave-001'
+            'crypt-001',
+            'crypt-002',
+            'crypt-003',
+            'crypt-004',
+            'crypt-005'
         ],
         structure: {
             '0,0,0': {
@@ -134,7 +144,7 @@ export const WORLD_MAPS: Record<string, MapDefinition> = {
             '0,-2,0': {
                 room: 'town-ns-road',
                 connections: ['north', 'south'],
-                mapConnections: [{ direction: 'south', connection: '', name: 'The Catacombs', loads: 'crypts-01', status: 'unlocked' }]
+                mapConnections: [{ direction: 'south', connection: '', name: 'The Catacombs', loads: 'crypts-01', status: 'locked' }]
             },
             '-1,-1,0': {
                 room: 'town-empty-shops',

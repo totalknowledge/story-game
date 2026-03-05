@@ -180,6 +180,19 @@ describe('GameEngineService', () => {
     expect(room!.items.some(item => item.id === floorItem.id)).toBe(false);
   });
 
+  it('reports room features in look output', () => {
+    const mapService = TestBed.inject(MapService);
+    const room = mapService.currentRoom();
+    expect(room).toBeTruthy();
+
+    room!.features = [{ id: 'f1', name: 'Hidden Cache', type: 'Chest' } as any];
+
+    const viewLines = service.lookAround();
+
+    expect(viewLines).toContain('Features:');
+    expect(viewLines).toContain(' - Hidden Cache');
+  });
+
   it('has living enemies follow between rooms on same map when chance succeeds', () => {
     const characterService = TestBed.inject(CharacterService);
     const mapService = TestBed.inject(MapService);

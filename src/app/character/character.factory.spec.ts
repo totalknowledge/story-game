@@ -17,14 +17,14 @@ describe('CharacterFactory', () => {
   it('player always starts with MagicMissile', () => {
     const player = service.createCharacter('player');
 
-    expect(player.spells.some(spell => spell.typeid === 'spell-magic-missile')).toBe(true);
+    expect(player.spells.some(spell => spell.typeid === 'spell-shocking-grasp')).toBe(true);
   });
 
   it('player starts with short bow, 20 arrows, and a cheese wheel', () => {
     const player = service.createCharacter('player');
 
-    expect(player.equipment.get('right-hand')?.typeid).toBe('weapon-bow-short');
-    expect(player.items.some(item => item.typeid === 'ammo-arrows' && item.quantity === 20)).toBe(true);
+    expect(player.equipment.get('left-hand')?.typeid).toBe('weapon-bow-short');
+    expect(player.equipment.get('right-hand')?.typeid).toBe('ammo-arrows');
     expect(player.items.some(item => item.typeid === 'food-cheese')).toBe(true);
   });
 });

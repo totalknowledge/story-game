@@ -15,7 +15,6 @@ describe('Feature', () => {
 
     fixture = TestBed.createComponent(Feature);
     component = fixture.componentInstance;
-    // assign input signal; cast through any to satisfy InputSignal branding
     component.feature = signal({ id: 'f1', name: 'Feat', type: 'Decoration', options: [], items: [] } as any) as any;
     fixture.detectChanges();
     await fixture.whenStable();

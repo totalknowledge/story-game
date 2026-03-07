@@ -125,8 +125,11 @@ export class GameEngineService {
 
       this.characterService.loadRoomCharacters(uniqueDestinationEnemyIds, roomHydration.enemies);
 
-      this.rest(player);
-      this.characterService.moveCharacter(destinationKey, player.id!);
+      const moved = departingRoom && destinationRoom && departingRoom.coordinateKey !== destinationKey;
+      if (moved) {
+        this.rest(player);
+        this.characterService.moveCharacter(destinationKey, player.id!);
+      }
 
       if (wasVisited && destinationRoom.features?.length) {
         const storeFeatures = destinationRoom.features.filter((f: any) =>

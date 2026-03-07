@@ -17,7 +17,7 @@ export class ItemFactory {
       return this.createFallbackItem(typeid);
     }
 
-    return this.createItemFromTemplate(itemTemplate);
+    return this.createItemFromTemplate(itemTemplate, Number(options?.['CRTarget']) ?? 9);
   }
 
   createRandomItem(includeTypes?: string[], CRTarget: number = 9, excludeTypes: string[] = ['Natural']): ItemModel {
@@ -28,6 +28,8 @@ export class ItemFactory {
         itemPool = itemPool.filter(itemTemplate => ['damaged', 'standard', 'fine'].includes(itemTemplate.quality ?? 'standard'))
     } else if (CRTarget < 30) {
         itemPool = itemPool.filter(itemTemplate => ['standard', 'fine', 'elite'].includes(itemTemplate.quality ?? 'standard'))
+    } else if (CRTarget < 40) {
+      itemPool = itemPool.filter(itemTemplate => ['fine', 'elite', 'magical'].includes(itemTemplate.quality ?? 'standard'));
     }
 
     if (includeTypes && includeTypes.length > 0) {
@@ -41,16 +43,16 @@ export class ItemFactory {
       return this.createFallbackItem('empty-pool');
     }
 
-    return this.createItemFromTemplate(pickRandom(itemPool) as any);
+    return this.createItemFromTemplate(pickRandom(itemPool), CRTarget);
   }
 
-  private createItemFromTemplate(template: ItemModel): ItemModel {
+  private createItemFromTemplate(template: ItemModel, CRTarget?: number): ItemModel {
     const newItem = new ItemModel(template);
-    this.randomizeMagicItem(newItem);
+    this.randomizeMagicItem(newItem, CRTarget);
     return newItem;
   }
 
-  private randomizeMagicItem(item: ItemModel): void {
+  private randomizeMagicItem(item: ItemModel, CRTarget?: number): void {
     if (item.type === 'Scroll' || item.type === 'SpellBook') {
       this.applyRandomSpell(item);
       return;
@@ -143,7 +145,8 @@ export class ItemFactory {
       typeid: 'broken-item',
       name: `Unknown Item (${typeid})`,
       type: 'Trinket',
-      equippableLocation: 'none'
+      equippableLocation: 'none',
+      baseCost: 4,
     });
   }
 }

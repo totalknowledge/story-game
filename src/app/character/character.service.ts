@@ -18,7 +18,7 @@ export class CharacterService {
     const character = this.characterRegistry.get(characterId);
     if (!character) return false;
 
-    const isPlayerCharacter = character.id === this.playerCharacterId || character.typeid === 'player';
+    const isPlayerCharacter = character.id === this.playerCharacterId || (character.typeid ?? '').startsWith('player');
     const naturalItems = isPlayerCharacter ? items.filter(item => item?.type === 'Natural') : [];
     const regularItems = isPlayerCharacter ? items.filter(item => item?.type !== 'Natural') : items;
 
@@ -27,8 +27,15 @@ export class CharacterService {
 
     if (isPlayerCharacter && naturalItems.length > 0) {
       for (const natItem of naturalItems) {
-        const stacked = stackConsumableItem(character, natItem, this.MAX_BACKPACK_SIZE);
-        acquiredAny = acquiredAny || stacked;
+        if ((natItem.maxStack ?? 0) > 1) {
+          const stacked = stackConsumableItem(character, natItem, this.MAX_BACKPACK_SIZE);
+          acquiredAny = acquiredAny || stacked;
+        } else {
+          if (character.items.length < this.MAX_BACKPACK_SIZE) {
+            character.items.push(natItem);
+            acquiredAny = true;
+          }
+        }
       }
     }
 
@@ -60,7 +67,7 @@ export class CharacterService {
     const character = this.getCharacterById(characterId);
     if (!character) return ['Character not found.'];
 
-    const isPlayerCharacter = character.id === this.playerCharacterId || character.typeid === 'player';
+    const isPlayerCharacter = character.id === this.playerCharacterId || (character.typeid ?? '').startsWith('player');
     if (isPlayerCharacter && item.type === 'Natural') {
       return [`You cannot equip natural anatomy like ${item.name}.`];
     }

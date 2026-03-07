@@ -64,7 +64,9 @@ export class CombatEngineService {
     const hasTargetPlaceholder = castTemplate.includes('{target}');
     const userReplacedTemplate = castTemplate.replace('{user}', caster.name);
 
-    combatLog.push(userReplacedTemplate);
+    if (!hasTargetPlaceholder) {
+      combatLog.push(userReplacedTemplate);
+    }
 
     if (spell.effect === 'heal') {
       const healAmount = rollDice(1, spell.healsUser || 0) + bonusEffect;

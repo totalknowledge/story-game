@@ -42,7 +42,7 @@ export function applyEquipItem(character: CharacterModel, item: ItemModel): bool
         return false;
     }
     
-    character.items = character.items.filter(inventoryItem => inventoryItem !== item);
+    character.items = character.items.filter(inventoryItem => inventoryItem.id !== item.id);
     if (currentlyEquippedItem) {
         character.items.push(currentlyEquippedItem);
     }
@@ -199,43 +199,61 @@ function calculatePotentialHealing(character: CharacterModel): number {
     return consumableHealing + spellHealing;
 }
 
-export function equipCharacter(character: CharacterModel, CRTarget: number, itemFactory: ItemFactory, characterTemplate?: any): void {
+export function equipCharacter(
+    character: CharacterModel,
+    CRTarget: number,
+    itemFactory: ItemFactory,
+    characterTemplate?: Partial<CharacterModel>): void {
+
+    const isPlayer = characterTemplate?.typeid?.startsWith('player');
     let items: ItemModel[] = [];
 
-    if (characterTemplate?.equippedItemTemplate) {
+    if (characterTemplate?.equippedItemTemplate?.length) {
         characterTemplate.equippedItemTemplate?.forEach((item: Partial<ItemModel>) => {
             items.push(new ItemModel(item));
         });
     } else {
-        items.push(itemFactory.createRandomItem(['Weapon']));
+        items.push(itemFactory.createRandomItem(['Weapon'], CRTarget));
     }
 
-    let lootCount = rollDice(1, Math.ceil(character.maxHealth / 10));
-    if ((characterTemplate?.typeid ?? '').startsWith('player')) {
-        lootCount = 0;
-    }
-    if (character.classification === 'elite') {
-        lootCount++;
-    } else if (character.classification === 'unique') {
-        lootCount += 2;
+    let lootCount = rollDice(1, Math.ceil(character.baseHealth / 10));
+
+    if (!isPlayer) {
+        lootCount += character.classification === 'unique' ? 2 : character.classification === 'elite' ? 1 : 0;
     }
 
-    for (let i = 0; i < lootCount; i++) {
-        if (character.classification === 'unique' && i === 0) {
-            items.push(itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket', 'Scroll', 'SpellBook']));
-        } else if (character.classification === 'elite' && i === 0) {
-            items.push(itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket']));
-        } else {
-            items.push(itemFactory.createRandomItem());
-        }
-    }
-
-    if (items[0]?.typeid === 'weapon-bow-short') {
+    if (items.some((item) => item.typeid === 'weapon-bow-short')) {
         items.push(itemFactory.createItem('ammo-arrows'));
     }
-    character.equippedItemTemplate = items
-        .map((item) => item.typeid)
-        .filter((typeid) => !!typeid);
+
     applyItemAcquisition(character, items, 100);
     applyCombatRatingCalculation(character);
+
+    // Debug logging to trace loot generation issues
+    try {
+        console.log(`[equipCharacter] typeid=${characterTemplate?.typeid} baseHealth=${character.baseHealth} CRTarget=${CRTarget} classification=${character.classification} isPlayer=${isPlayer}`);
+        console.log(`[equipCharacter] initial items: ${items.map(i => i.typeid).join(', ')}, initialLootCount=${lootCount}`);
+    } catch (e) {
+        // ignore logging errors in environments without console
+    }
+    
+    if (isPlayer) return;
+
+    while (((character.combatRating ?? 0) < CRTarget) && lootCount > 0) {
+        let item: ItemModel;
+        if (character.classification === 'unique' && lootCount === 1) {
+            item = itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket', 'Scroll', 'SpellBook'], CRTarget + 1);
+        } else if (character.classification === 'elite' && lootCount === 1) {
+            item = itemFactory.createRandomItem(['Weapon', 'Armor', 'Trinket'], CRTarget);
+        } else {
+            item = itemFactory.createRandomItem([], CRTarget);
+        }
+        lootCount--;
+        try {
+            console.log(`[equipCharacter] generated item: ${item?.typeid} (classification=${character.classification}) lootCountRemaining=${lootCount}`);
+        } catch (e) {}
+        // add the generated item to the character (respects stacking/equip rules)
+        applyItemAcquisition(character, [item], 100);
+        applyCombatRatingCalculation(character);
+    }
 }

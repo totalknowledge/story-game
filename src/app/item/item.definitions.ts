@@ -21,18 +21,6 @@ export const ITEM_TEMPLATES = [
             "{user} uses {item} to attack."
         ]
     },
-    {
-        "typeid": "material-hide",
-        "name": "Hide",
-        "type": "Material",
-        "equippableLocation": "none",
-        "quality": "standard",
-        "quantity": 1,
-        "maxStack": 20,
-        "useMessages": [
-            "{user} collects {item}."
-        ]
-    },
     ...ARMOR,
     {
         "typeid": "trinket-ring",

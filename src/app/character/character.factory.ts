@@ -62,8 +62,8 @@ export class CharacterFactory {
       characterTemplate = {
         ...characterTemplate,
         name: nameGender.name,
-        baseHealth: Math.round(characterTemplate.baseHealth * 1.3),
-        baseMana: Math.round(characterTemplate.baseMana * 1.3),
+        baseHealth: Math.round(characterTemplate.baseHealth * 2.3),
+        baseMana: Math.round(characterTemplate.baseMana * 2.3),
         named: true,
         classification
       };
